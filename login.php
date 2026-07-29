@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password = $_POST['password'];
         $role = strtolower($_POST['role']);
 
-        if ($name === '' || $email === '' || $password === '' || !in_array($role, ['donor','volunteer','ngo'])) {
+        if ($name === '' || $email === '' || $password === '' || !in_array($role, ['donor','ngo'])) {
             $error = "All fields are required.";
         } else {
             // Check if email already exists
@@ -158,8 +158,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="password" name="password" placeholder="Enter your password" required>
         <button type="submit" class="btn">Login</button>
       </form>
-      <div class="note">Admin (testing): admin / admin</div>
-      <div class="note">Volunteer allowed: volunteer1, volunteer2, volunteer3</div>
+      <div class="note" style="margin-top:15px; padding:10px; background:rgba(255,255,255,0.15); border-radius:10px; text-align:left; font-size:13px;">
+        🔑 <strong>Admin:</strong> <code>admin</code> / <code>admin</code><br>
+        🚴 <strong>Volunteer Logins:</strong><br>
+        &nbsp;&nbsp;• Username: <code>volunteer1</code> | <code>volunteer2</code> | <code>volunteer3</code><br>
+        &nbsp;&nbsp;• Password: <code>vol123</code>
+      </div>
     </div>
 
     <!-- Signup Form -->
@@ -175,8 +179,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="radio-group">
           <label>I want to:</label>
           <label><input type="radio" name="role" value="donor" required> Donate food</label>
-          <label><input type="radio" name="role" value="volunteer" required> Volunteer</label>
           <label><input type="radio" name="role" value="ngo" required> Register as NGO/Receiver</label>
+          <div style="font-size:11px; opacity:0.8; margin-top:4px; color:#d1fae5;">* Note: Volunteers are registered directly by the Admin.</div>
         </div>
         <button type="submit" class="btn">Create Account</button>
       </form>
