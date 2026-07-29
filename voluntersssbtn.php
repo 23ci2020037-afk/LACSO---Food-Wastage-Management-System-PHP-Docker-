@@ -43,10 +43,28 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])){
     }
 }
 
+// Auto-ensure required columns exist in donations table to prevent SQL errors
+@$conn->query("ALTER TABLE donations ADD COLUMN user_id INT DEFAULT 0");
+@$conn->query("ALTER TABLE donations ADD COLUMN donor_id INT DEFAULT 0");
+@$conn->query("ALTER TABLE donations ADD COLUMN donor_name VARCHAR(100) DEFAULT 'Donor'");
+@$conn->query("ALTER TABLE donations ADD COLUMN volunteer_name VARCHAR(100) DEFAULT NULL");
+
+$hasUserId = $conn->query("SHOW COLUMNS FROM donations LIKE 'user_id'")->num_rows > 0;
+$hasDonorId = $conn->query("SHOW COLUMNS FROM donations LIKE 'donor_id'")->num_rows > 0;
+
+$joinCond = "1=1";
+if ($hasUserId && $hasDonorId) {
+    $joinCond = "(d.user_id = u.id OR d.donor_id = u.id)";
+} else if ($hasUserId) {
+    $joinCond = "d.user_id = u.id";
+} else if ($hasDonorId) {
+    $joinCond = "d.donor_id = u.id";
+}
+
 // Fetch donations for volunteer
-$sql = "SELECT d.id, u.name AS donor_name, d.food_name, d.quantity, d.status, d.created_at, d.pickup_address, d.drop_address, d.category, d.serves
+$sql = "SELECT d.id, IFNULL(d.donor_name, u.name) AS donor_name, d.food_name, d.quantity, d.status, d.created_at, d.pickup_address, d.drop_address, d.category, d.serves
         FROM donations d
-        LEFT JOIN users u ON d.user_id = u.id
+        LEFT JOIN users u ON $joinCond
         ORDER BY d.created_at DESC";
 $donationsResult = $conn->query($sql);
 ?>

@@ -9,8 +9,23 @@ if (!isset($_SESSION['user_id'])) {
 $userName = $_SESSION['user_name'] ?? 'Guest';
 $donor_id = $_SESSION['user_id'];
 
+// Auto-repair donations schema if columns are missing
+@$conn->query("ALTER TABLE donations ADD COLUMN user_id INT DEFAULT 0");
+@$conn->query("ALTER TABLE donations ADD COLUMN donor_id INT DEFAULT 0");
+@$conn->query("ALTER TABLE donations ADD COLUMN donor_name VARCHAR(100) DEFAULT 'Donor'");
+@$conn->query("ALTER TABLE donations ADD COLUMN volunteer_name VARCHAR(100) DEFAULT NULL");
+
 $hasDonorIdCol = $conn->query("SHOW COLUMNS FROM donations LIKE 'donor_id'")->num_rows > 0;
-$whereClause = $hasDonorIdCol ? "(donor_id = $donor_id OR user_id = $donor_id)" : "user_id = $donor_id";
+$hasUserIdCol  = $conn->query("SHOW COLUMNS FROM donations LIKE 'user_id'")->num_rows > 0;
+
+$whereClause = "1=1";
+if ($hasDonorIdCol && $hasUserIdCol) {
+    $whereClause = "(donor_id = $donor_id OR user_id = $donor_id)";
+} else if ($hasDonorIdCol) {
+    $whereClause = "donor_id = $donor_id";
+} else if ($hasUserIdCol) {
+    $whereClause = "user_id = $donor_id";
+}
 
 // Stats
 $totalDonations = 0;
