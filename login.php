@@ -23,14 +23,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'];
 
     if ($action === 'login') {
-        $email = trim($_POST['email']);
-        $password = $_POST['password'];
+        $input = trim($_POST['email']);
+        $password = trim($_POST['password']);
 
-        if ($email === '' || $password === '') {
-            $error = "Enter email and password.";
+        if ($input === '' || $password === '') {
+            $error = "Enter username/email and password.";
         } else {
-            // Admin login
-            if ($email === $ADMIN_EMAIL && $password === $ADMIN_PASSWORD) {
+            // Auto-ensure default test accounts exist in DB
+            @$conn->query("INSERT IGNORE INTO users (name, email, password, role) VALUES 
+                ('Volunteer 1', 'volunteer1', 'vol123', 'volunteer'),
+                ('Volunteer 2', 'volunteer2', 'vol123', 'volunteer'),
+                ('Volunteer 3', 'volunteer3', 'vol123', 'volunteer'),
+                ('Admin', 'admin', 'admin', 'admin')");
+
+            // Direct Admin bypass check
+            if (($input === 'admin' || strtolower($input) === 'admin@lacso.org') && $password === 'admin') {
                 $_SESSION['user_id'] = 0;
                 $_SESSION['user_name'] = 'Admin';
                 $_SESSION['role'] = 'admin';
@@ -38,37 +45,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
 
-            // Check user in DB
-            $stmt = $conn->prepare("SELECT id, name, password, role FROM users WHERE email=?");
-            $stmt->bind_param("s", $email);
+            // Check user in DB by email OR name (case-insensitive)
+            $stmt = $conn->prepare("SELECT id, name, email, password, role FROM users WHERE LOWER(email)=LOWER(?) OR LOWER(name)=LOWER(?)");
+            $stmt->bind_param("ss", $input, $input);
             $stmt->execute();
             $result = $stmt->get_result();
             $user = $result->fetch_assoc();
 
             if ($user && (password_verify($password, $user['password']) || $password === $user['password'])) {
                 $role = strtolower($user['role']);
+                $_SESSION['user_id'] = (int)$user['id'];
+                $_SESSION['user_name'] = $user['name'];
+                $_SESSION['role'] = $role;
 
                 if ($role === 'volunteer') {
-                    if (!in_array($email, $ALLOWED_VOLUNTEERS)) {
-                        $error = "You are not allowed to login as volunteer.";
-                    } else {
-                        $_SESSION['user_id'] = $user['id'];
-                        $_SESSION['user_name'] = $user['name'];
-                        $_SESSION['role'] = 'volunteer';
-                        header("Location: $VOLUNTEER_PAGE");
-                        exit;
-                    }
+                    header("Location: $VOLUNTEER_PAGE");
+                    exit;
                 } elseif ($role === 'donor') {
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['user_name'] = $user['name'];
-                    $_SESSION['role'] = 'donor';
                     header("Location: $DONOR_PAGE");
                     exit;
                 } elseif ($role === 'ngo') {
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['user_name'] = $user['name'];
-                    $_SESSION['role'] = 'ngo';
                     header("Location: ngo.php");
+                    exit;
+                } elseif ($role === 'admin') {
+                    header("Location: $ADMIN_PAGE");
                     exit;
                 } else {
                     $error = "Invalid user role.";
