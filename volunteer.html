@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lacso - Volunteer Dashboard</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div class="w-64 bg-green-600 text-white flex flex-col">
+            <div class="p-6 text-2xl font-bold flex items-center space-x-2">
+                <i class="ri-heart-pulse-fill"></i> <span>Lacso</span>
+            </div>
+            <nav class="flex-1 px-4 space-y-2">
+                <a href="#" class="flex items-center space-x-3 p-3 bg-green-700 rounded-lg"><i class="ri-dashboard-line"></i><span>Dashboard</span></a>
+                <a href="#" class="flex items-center space-x-3 p-3 hover:bg-green-700 rounded-lg"><i class="ri-task-line"></i><span>My Tasks</span></a>
+                <a href="#" class="flex items-center space-x-3 p-3 hover:bg-green-700 rounded-lg"><i class="ri-history-line"></i><span>History</span></a>
+                <a href="login.html" class="flex items-center space-x-3 p-3 hover:bg-green-700 rounded-lg mt-auto"><i class="ri-logout-box-line"></i><span>Logout</span></a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-8">
+            <header class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Welcome, Volunteer!</h1>
+                    <p class="text-gray-500">Ready to save some food today?</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="font-bold text-gray-800">John Doe</p>
+                        <p class="text-sm text-green-600">Top Volunteer</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center text-green-700 font-bold">JD</div>
+                </div>
+            </header>
+
+            <!-- Task Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="task-container">
+                <!-- Task Card -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition card-reveal">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-bold uppercase tracking-wider">Urgent</span>
+                        <span class="text-gray-400 text-xs">2 mins ago</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Fresh Vegetables (5kg)</h3>
+                    <p class="text-sm text-gray-500 mb-4"><i class="ri-map-pin-line mr-1"></i> Sarah Johnson's Residence</p>
+                    <div class="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+                        <i class="ri-time-line"></i> <span>Collection needed by 8:00 PM</span>
+                    </div>
+                    <button class="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition" onclick="acceptTask(this)">Accept Task</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        gsap.from(".card-reveal", { y: 30, opacity: 0, stagger: 0.2, duration: 0.8, ease: "power2.out" });
+        
+        function acceptTask(btn) {
+            btn.innerHTML = '<i class="ri-loader-4-line animate-spin"></i> Accepting...';
+            setTimeout(() => {
+                btn.parentElement.classList.add('scale-95', 'opacity-50');
+                btn.innerHTML = 'Task Accepted ✅';
+                btn.disabled = true;
+                alert("Task accepted! Donor has been notified.");
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

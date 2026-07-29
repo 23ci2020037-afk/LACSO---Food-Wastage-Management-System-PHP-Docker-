@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donor Dashboard - Lacso</title>
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Outfit', sans-serif; background-color: #f0f7f4; overflow-x: hidden; }
+    .glass-effect { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.4); }
+    .primary-gradient { background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); }
+    .card-hover { transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
+    .card-hover:hover { transform: translateY(-12px) scale(1.02); box-shadow: 0 30px 60px -12px rgba(22, 163, 74, 0.15); }
+    
+    .reveal { opacity: 0; transform: translateY(30px); }
+    
+    @keyframes floating {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    .floating-img { animation: floating 4s ease-in-out infinite; }
+  </style>
+</head>
+<body class="min-h-screen text-gray-800">
+
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-green-100 px-8 py-5 flex justify-between items-center shadow-sm">
+    <div class="flex items-center gap-2">
+      <div class="w-10 h-10 primary-gradient rounded-xl flex items-center justify-center shadow-lg shadow-green-200">
+        <i class="ri-heart-fill text-white text-xl"></i>
+      </div>
+      <h1 class="text-2xl font-bold bg-gradient-to-r from-green-700 to-green-500 bg-clip-text text-transparent underline decoration-green-200 underline-offset-4">Lacso</h1>
+    </div>
+    <ul class="hidden md:flex gap-10 text-gray-600 font-semibold uppercase tracking-wider text-xs">
+      <li><a href="index.html" class="hover:text-green-600 transition-colors">Home</a></li>
+      <li><a href="History.html" class="hover:text-green-600 transition-colors">My Donations</a></li>
+      <li><a href="Network.html" class="hover:text-green-600 transition-colors">Network</a></li>
+      <li><a href="Feedback.html" class="hover:text-green-600 transition-colors">Feedback</a></li>
+    </ul>
+    <div class="flex items-center gap-5">
+      <div class="bg-gray-100 p-2 rounded-full cursor-pointer relative group">
+        <i class="ri-notification-3-line text-lg text-gray-500 group-hover:text-green-600"></i>
+        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+      </div>
+      <div class="flex items-center gap-3 pl-4 border-l border-gray-100">
+        <img src="https://i.pravatar.cc/100?img=32" alt="donor" class="w-10 h-10 rounded-full border-2 border-green-100 p-0.5">
+        <span class="hidden lg:block text-sm font-bold text-gray-700" id="navbarName">Donor</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto p-8">
+    
+    <!-- Hero Welcome -->
+    <div class="reveal relative bg-white rounded-[3rem] p-12 shadow-2xl shadow-green-100 mb-12 border border-green-50 overflow-hidden">
+      <!-- Decor Circles -->
+      <div class="absolute -top-10 -right-10 w-48 h-48 bg-green-50 rounded-full opacity-50 blur-3xl"></div>
+      <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-green-100 rounded-full opacity-30 blur-3xl"></div>
+      
+      <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
+        <div class="flex-1 text-center md:text-left">
+          <div class="flex items-center justify-center md:justify-start gap-2 mb-4">
+             <span class="px-4 py-1.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold uppercase tracking-widest">Global Impact Hero</span>
+             <div class="h-1 w-12 bg-green-200 rounded-full hidden md:block"></div>
+          </div>
+          <h2 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6 tracking-tight leading-tight">
+            Welcome back,<br><span id="donorName" class="text-green-600">Friend</span>! 🎉
+          </h2>
+          <p class="text-gray-500 text-lg md:text-xl max-w-xl leading-relaxed font-light mx-auto md:mx-0">
+            Your recent contributions have helped feed <span class="font-bold text-gray-900">45 families</span> this month. Every act of kindness counts.
+          </p>
+          <div class="mt-10 flex flex-wrap justify-center md:justify-start gap-5">
+            <button onclick="window.location.href='Donationfrom.html'" class="primary-gradient text-white px-8 py-4 rounded-2xl shadow-xl shadow-green-200 hover:scale-105 active:scale-95 transition-all font-bold flex items-center gap-3">
+              <i class="ri-add-circle-line text-2xl"></i> Donate Now
+            </button>
+            <button onclick="window.location.href='History.html'" class="bg-gray-50 border-2 border-transparent text-gray-600 px-8 py-4 rounded-2xl hover:bg-white hover:border-green-200 transition-all font-bold flex items-center gap-3">
+              <i class="ri-history-line text-2xl"></i> History
+            </button>
+          </div>
+        </div>
+        <div class="relative w-full md:w-1/2 flex justify-center floating-img">
+           <img src="donor_hero_illustration.png" alt="donation" class="w-full max-w-md drop-shadow-[0_35px_35px_rgba(22,163,74,0.2)]">
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Insights -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 reveal">
+      <div class="glass-effect p-8 rounded-[2rem] card-hover">
+        <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mb-6 text-green-600"><i class="ri-restaurant-line text-3xl"></i></div>
+        <h4 class="text-gray-400 font-semibold uppercase text-xs tracking-widest mb-1">Total Impact</h4>
+        <p class="text-4xl font-bold">1,240 <span class="text-sm font-normal text-gray-400">kg</span></p>
+      </div>
+      <div class="glass-effect p-8 rounded-[2rem] card-hover">
+        <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 text-blue-600"><i class="ri-community-line text-3xl"></i></div>
+        <h4 class="text-gray-400 font-semibold uppercase text-xs tracking-widest mb-1">Charities Helped</h4>
+        <p class="text-4xl font-bold">12 <span class="text-sm font-normal text-gray-400">centers</span></p>
+      </div>
+      <div class="glass-effect p-8 rounded-[2rem] card-hover">
+        <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center mb-6 text-orange-600"><i class="ri-medal-fill text-3xl"></i></div>
+        <h4 class="text-gray-400 font-semibold uppercase text-xs tracking-widest mb-1">Badges Earned</h4>
+        <p class="text-4xl font-bold">8 <span class="text-sm font-normal text-gray-400">awards</span></p>
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-10 reveal">
+      
+      <!-- Live Tracking Section -->
+      <div class="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-green-50 border border-green-50">
+        <div class="flex justify-between items-center mb-8">
+          <h3 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+            <span class="p-2 bg-green-100 rounded-lg"><i class="ri-truck-line text-green-600 text-xl"></i></span>
+            Live Tracking
+          </h3>
+          <span class="text-xs font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full animate-pulse">LIVE NOW</span>
+        </div>
+
+        <div id="noTracking" class="text-center py-12">
+          <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="ri-inbox-line text-4xl text-gray-200"></i>
+          </div>
+          <p class="text-gray-400 font-medium italic">No active deliveries at the moment.</p>
+        </div>
+
+        <div id="activeTracking" class="hidden">
+           <!-- Map Visualization -->
+           <div id="mapSimulation" class="relative w-full h-40 bg-gray-50 rounded-2xl mb-8 overflow-hidden border border-gray-100">
+              <svg class="absolute inset-0 w-full h-full" viewBox="0 0 400 200">
+                <path id="roadPath" d="M 50 150 Q 200 150 200 100 T 350 50" fill="none" stroke="#dcfce7" stroke-width="8" stroke-linecap="round"/>
+              </svg>
+              <div id="bikeIcon" class="absolute w-8 h-8 transition-all duration-1000 ease-linear" style="offset-path: path('M 50 150 Q 200 150 200 100 T 350 50'); offset-distance: 0%;">
+                <div class="bg-green-600 p-2 rounded-full shadow-lg"><i class="ri-motorbike-fill text-white text-sm"></i></div>
+              </div>
+           </div>
+
+           <!-- Volunteer Progress -->
+           <div class="flex items-center gap-5 p-6 bg-gray-50 rounded-3xl mb-8">
+              <img id="volunteerImg" src="https://i.pravatar.cc/100?img=12" class="w-16 h-16 rounded-2xl shadow-md border-2 border-white">
+              <div class="flex-1">
+                <h5 id="trackingVolunteerName" class="font-bold text-lg">Volunteer</h5>
+                <p id="textAccepted" class="text-sm text-gray-500">Checking your donation...</p>
+              </div>
+              <button class="bg-white p-3 rounded-2xl shadow-sm text-green-600 hover:bg-green-500 hover:text-white transition-all">
+                <i class="ri-phone-line text-xl"></i>
+              </button>
+           </div>
+
+           <!-- Simple Timeline -->
+           <div class="space-y-6 relative ml-6">
+              <div class="absolute left-[-15px] top-4 bottom-4 w-0.5 bg-gray-100"></div>
+              <div class="relative flex items-center gap-4">
+                <div class="w-3 h-3 bg-green-500 rounded-full shadow-[0_0_8px_rgba(22,163,74,0.5)] z-10"></div>
+                <p class="text-sm font-bold text-gray-900">Donation Request Received</p>
+              </div>
+              <div class="relative flex items-center gap-4">
+                <div id="statusDot" class="w-3 h-3 bg-gray-200 rounded-full z-10"></div>
+                <p id="statusText" class="text-sm text-gray-400 font-medium">Volunteer heading to your location</p>
+              </div>
+           </div>
+        </div>
+      </div>
+
+      <!-- Impact Stats Card -->
+      <div class="primary-gradient rounded-[2.5rem] p-12 text-white shadow-2xl shadow-green-200 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-white/10 rounded-full"></div>
+        <div class="relative z-10">
+          <i class="ri-double-quotes-l text-6xl opacity-30 mb-6 block"></i>
+          <h3 class="text-3xl font-bold leading-tight mb-4">"Kindness is the language which the deaf can hear and the blind can see."</h3>
+          <p class="opacity-80 text-lg">— Mark Twain</p>
+        </div>
+        <div class="relative z-10 mt-12 bg-white/20 p-6 rounded-3xl backdrop-blur-md">
+           <div class="flex justify-between items-center">
+              <div>
+                <p class="text-sm opacity-80 uppercase tracking-widest font-bold">Donor Rank</p>
+                <p class="text-2xl font-bold mt-1">Silver Legend</p>
+              </div>
+              <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center"><i class="ri-vip-diamond-line text-3xl text-green-600"></i></div>
+           </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Support Chat (Old functionality kept) -->
+  <div id="chatBox" class="hidden fixed bottom-24 right-8 w-96 bg-white shadow-2xl rounded-[2rem] border border-gray-100 overflow-hidden z-[100]">
+    <div class="primary-gradient text-white p-6 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><i class="ri-customer-service-2-line text-xl"></i></div>
+        <div>
+          <h4 class="font-bold">Lacso Support</h4>
+          <p class="text-[10px] opacity-80 uppercase tracking-widest">Always Online</p>
+        </div>
+      </div>
+      <button id="closeChat" class="hover:bg-black/10 p-2 rounded-lg"><i class="ri-close-line text-xl"></i></button>
+    </div>
+    <div id="chatMessages" class="p-6 h-[400px] overflow-y-auto space-y-4 bg-gray-50/50">
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-50 text-sm max-w-[85%]">
+        👋 Hi there! I'm your Lacso Helper. How can I assist you in your donation journey today?
+      </div>
+    </div>
+    <div class="p-4 bg-white border-t border-gray-50 flex gap-2">
+      <input id="chatInput" type="text" placeholder="Type a message..." class="flex-1 bg-gray-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500">
+      <button id="sendMsg" class="primary-gradient text-white p-3 rounded-xl shadow-lg shadow-green-100"><i class="ri-send-plane-2-fill text-xl"></i></button>
+    </div>
+  </div>
+
+  <button id="chatToggle" class="fixed bottom-8 right-8 w-16 h-16 primary-gradient text-white rounded-2xl shadow-2xl shadow-green-300 flex items-center justify-center text-3xl z-[100] hover:scale-110 transition-all cursor-pointer">
+    <i class="ri-chat-3-line"></i>
+  </button>
+
+<script>
+  // Auth & Name Check
+  function initAuth() {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (currentUser) {
+      document.getElementById("donorName").textContent = currentUser.name;
+      document.getElementById("navbarName").textContent = currentUser.name;
+      updateTracking(currentUser.name);
+    } else {
+      window.location.href = "login.html";
+    }
+  }
+
+  function updateTracking(name) {
+    const donations = JSON.parse(localStorage.getItem("activeDonations")) || [];
+    const myDonation = [...donations].reverse().find(d => d.donorName === name);
+    
+    if (myDonation) {
+      document.getElementById("noTracking").classList.add("hidden");
+      document.getElementById("activeTracking").classList.remove("hidden");
+      
+      if (myDonation.status === "Accepted") {
+        document.getElementById("trackingVolunteerName").textContent = myDonation.volunteerName;
+        document.getElementById("textAccepted").textContent = `Picked up by ${myDonation.volunteerName}`;
+        document.getElementById("statusText").textContent = "Donation is being delivered to the center!";
+        document.getElementById("statusText").classList.replace("text-gray-400", "text-green-600");
+        document.getElementById("statusDot").classList.replace("bg-gray-200", "bg-green-600");
+        document.getElementById("bikeIcon").style.offsetDistance = "60%";
+        
+        const vImg = document.getElementById("volunteerImg");
+        if (myDonation.volunteerName === "Volunteer 1") vImg.src = "https://i.pravatar.cc/100?img=12";
+        else if (myDonation.volunteerName === "Volunteer 2") vImg.src = "https://i.pravatar.cc/100?img=13";
+        else if (myDonation.volunteerName === "Volunteer 3") vImg.src = "https://i.pravatar.cc/100?img=11";
+      }
+    }
+  }
+
+  // Chatbot (restoring previous logic)
+  const chatToggle = document.getElementById('chatToggle');
+  const chatBox = document.getElementById('chatBox');
+  const closeChat = document.getElementById('closeChat');
+  const sendMsg = document.getElementById('sendMsg');
+  const chatInput = document.getElementById('chatInput');
+  const chatMessages = document.getElementById('chatMessages');
+
+  chatToggle.onclick = () => chatBox.classList.toggle('hidden');
+  closeChat.onclick = () => chatBox.classList.add('hidden');
+
+  sendMsg.onclick = () => {
+    const text = chatInput.value.trim();
+    if (text) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "ml-auto bg-green-500 text-white p-4 rounded-2xl shadow-sm text-sm max-w-[85%]";
+      msgDiv.textContent = text;
+      chatMessages.appendChild(msgDiv);
+      chatInput.value = "";
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      setTimeout(() => {
+        const replyDiv = document.createElement("div");
+        replyDiv.className = "bg-white p-4 rounded-2xl shadow-sm border border-gray-50 text-sm max-w-[85%]";
+        replyDiv.textContent = "🤖 Thanks! Our team will get back to you soon regarding: " + text.substring(0,20) + "...";
+        chatMessages.appendChild(replyDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }, 1000);
+    }
+  };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initAuth();
+      
+      // GSAP Entrance Animations
+      gsap.to(".reveal", {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        stagger: 0.2,
+        ease: "power4.out"
+      });
+    });
+</script>
+
+</body>
+</html>

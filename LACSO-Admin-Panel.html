@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LACSO Admin Panel</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        // Primary Green
+        primary: '#16A34A',   // Tailwind green-600
+        // Secondary Darker Green
+        secondary: '#15803D'  // Tailwind green-700
+      }
+    }
+  }
+}
+</script>
+
+<style>
+.nav-item:hover {
+  background-color: rgba(22, 163, 74, 0.08); /* hover light green */
+  transform: translateX(4px);
+}
+.nav-item.active {
+  background-color: #16A34A; /* primary green */
+  color: white;
+}
+.btn-primary {
+  background-color: #16A34A; /* primary green */
+  color: white;
+}
+.btn-primary:hover {
+  background-color: #15803D; /* darker green */
+}
+.btn-secondary {
+  background-color: #15803D; /* secondary green */
+  color: white;
+}
+.btn-secondary:hover {
+  background-color: #166534; /* even darker green */
+}
+input:checked + .slider {
+  background-color: #16A34A; /* primary green */
+}
+.custom-checkbox.checked {
+  background-color: #16A34A;
+  border-color: #16A34A;
+}
+.custom-radio.checked {
+  border-color: #16A34A;
+}
+.custom-radio.checked::after {
+  background-color: #16A34A;
+}
+</style>
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<style>
+:where([class^="ri-"])::before {
+content: "\f3c2";
+}
+body {
+font-family: 'Inter', sans-serif;
+}
+.sidebar-transition {
+transition: transform 0.3s ease-in-out;
+}
+.card-shadow {
+box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+.card-shadow:hover {
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+.nav-item {
+transition: all 0.2s ease-in-out;
+}
+.nav-item:hover {
+background-color: rgba(59, 130, 246, 0.1);
+transform: translateX(4px);
+}
+.nav-item.active {
+background-color: #3B82F6;
+color: white;
+}
+.btn-primary {
+background-color: #3B82F6;
+color: white;
+transition: all 0.2s ease-in-out;
+}
+.btn-primary:hover {
+background-color: #2563EB;
+transform: translateY(-1px);
+}
+.btn-secondary {
+background-color: #10B981;
+color: white;
+transition: all 0.2s ease-in-out;
+}
+.btn-secondary:hover {
+background-color: #059669;
+transform: translateY(-1px);
+}
+.modal {
+display: none;
+position: fixed;
+z-index: 1000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5);
+}
+.modal.show {
+display: flex;
+align-items: center;
+justify-content: center;
+}
+.switch {
+position: relative;
+display: inline-block;
+width: 60px;
+height: 34px;
+}
+.switch input {
+opacity: 0;
+width: 0;
+height: 0;
+}
+.slider {
+position: absolute;
+cursor: pointer;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: #ccc;
+transition: .4s;
+border-radius: 34px;
+}
+.slider:before {
+position: absolute;
+content: "";
+height: 26px;
+width: 26px;
+left: 4px;
+bottom: 4px;
+background-color: white;
+transition: .4s;
+border-radius: 50%;
+}
+input:checked + .slider {
+background-color: #3B82F6;
+}
+input:checked + .slider:before {
+transform: translateX(26px);
+}
+.custom-checkbox {
+position: relative;
+display: inline-block;
+width: 20px;
+height: 20px;
+background-color: white;
+border: 2px solid #d1d5db;
+border-radius: 4px;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+.custom-checkbox.checked {
+background-color: #3B82F6;
+border-color: #3B82F6;
+}
+.custom-checkbox.checked::after {
+content: '✓';
+position: absolute;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+color: white;
+font-size: 12px;
+font-weight: bold;
+}
+.custom-radio {
+position: relative;
+display: inline-block;
+width: 20px;
+height: 20px;
+background-color: white;
+border: 2px solid #d1d5db;
+border-radius: 50%;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+.custom-radio.checked {
+border-color: #3B82F6;
+}
+.custom-radio.checked::after {
+content: '';
+position: absolute;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+width: 10px;
+height: 10px;
+background-color: #3B82F6;
+border-radius: 50%;
+}
+@media (max-width: 768px) {
+.sidebar {
+transform: translateX(-100%);
+}
+.sidebar.mobile-open {
+transform: translateX(0);
+}
+}
+</style>
+</head>
+<body class="bg-gray-50">
+<div class="flex h-screen overflow-hidden">
+<div id="sidebar" class="sidebar sidebar-transition w-64 bg-gray-900 text-white flex flex-col fixed md:relative z-50 h-full">
+<div class="p-6 border-b border-gray-700">
+<div class="flex items-center space-x-3">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+<i class="ri-heart-fill text-white text-xl"></i>
+</div>
+<div>
+<h1 class="text-xl font-bold font-['Pacifico']">LACSO</h1>
+<p class="text-sm text-gray-400">Admin Panel</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 p-4">
+<ul class="space-y-2">
+<li><a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg active" data-section="dashboard">
+<div class="w-5 h-5 flex items-center justify-center"><i class="ri-dashboard-line"></i></div>
+<span>Dashboard</span>
+</a></li>
+<li><a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg" data-section="volunteers">
+<div class="w-5 h-5 flex items-center justify-center"><i class="ri-team-line"></i></div>
+<span>Volunteers</span>
+</a></li>
+<li><a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg" data-section="donors">
+<div class="w-5 h-5 flex items-center justify-center"><i class="ri-user-heart-line"></i></div>
+<span>Donors</span>
+</a></li>
+<li><a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg" data-section="donations">
+<div class="w-5 h-5 flex items-center justify-center"><i class="ri-gift-line"></i></div>
+<span>Donations</span>
+</a></li>
+<li><a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg" data-section="leaderboard">
+<div class="w-5 h-5 flex items-center justify-center"><i class="ri-trophy-line"></i></div>
+<span>Leaderboard</span>
+</a></li>
+<li><a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg" data-section="map">
+<div class="w-5 h-5 flex items-center justify-center"><i class="ri-map-pin-line"></i></div>
+<span>Map</span>
+</a></li>
+<li><a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg" data-section="messages">
+<div class="w-5 h-5 flex items-center justify-center"><i class="ri-message-line"></i></div>
+<span>Messages</span>
+</a></li>
+<li><a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg" data-section="broadcast">
+<div class="w-5 h-5 flex items-center justify-center"><i class="ri-broadcast-line"></i></div>
+<span>Broadcast</span>
+</a></li>
+<li><a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg" data-section="reports">
+<div class="w-5 h-5 flex items-center justify-center"><i class="ri-file-chart-line"></i></div>
+<span>Reports</span>
+</a></li>
+<li><a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg" data-section="settings">
+<div class="w-5 h-5 flex items-center justify-center"><i class="ri-settings-line"></i></div>
+<span>Settings</span>
+</a></li>
+</ul>
+</nav>
+</div>
+<div class="flex-1 flex flex-col overflow-hidden">
+<header class="bg-white shadow-sm border-b border-gray-200 p-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-4">
+<button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
+<div class="w-6 h-6 flex items-center justify-center"><i class="ri-menu-line text-xl"></i></div>
+</button>
+<h2 id="page-title" class="text-2xl font-semibold text-gray-900">Dashboard</h2>
+</div>
+<div class="flex items-center space-x-4">
+<div class="relative">
+<button class="p-2 rounded-lg hover:bg-gray-100 relative">
+<div class="w-6 h-6 flex items-center justify-center"><i class="ri-notification-line text-xl"></i></div>
+<span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
+</button>
+</div>
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+<span class="text-white text-sm font-medium">A</span>
+</div>
+<span class="text-sm font-medium text-gray-700">Admin User</span>
+</div>
+</div>
+</div>
+</header>
+  <main class="flex-1 overflow-y-auto p-6">
+    <div id="dashboard" class="section">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Food Donated -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Food Donated</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1" id="total-food-donated">0 kg</p>
+          </div>
+          <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+            <i class="ri-restaurant-line text-green-600 text-xl"></i>
+          </div>
+        </div>
+
+        <!-- Active Volunteers -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Active Volunteers</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1" id="volunteers-count">3</p>
+          </div>
+          <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+            <i class="ri-user-follow-line text-blue-600 text-xl"></i>
+          </div>
+        </div>
+
+        <!-- Registered Donors -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Registered Donors</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1" id="active-donors-count">0</p>
+          </div>
+          <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+            <i class="ri-group-line text-purple-600 text-xl"></i>
+          </div>
+        </div>
+
+        <!-- Total Deliveries -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Deliveries</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1" id="deliveries-count">0</p>
+          </div>
+          <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
+            <i class="ri-truck-line text-orange-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="bg-white p-6 rounded-xl card-shadow">
+<h3 class="text-lg font-semibold text-gray-900 mb-4">Donation Trends</h3>
+<div id="donationChart" class="h-64"></div>
+</div>
+<div class="bg-white p-6 rounded-xl card-shadow">
+<h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h3>
+<div class="space-y-4">
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+<i class="ri-check-line text-green-600"></i>
+</div>
+<div class="flex-1">
+<p class="text-sm font-medium text-gray-900">New donation received from Sarah Johnson</p>
+<p class="text-xs text-gray-500">2 hours ago</p>
+</div>
+</div>
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+<i class="ri-user-add-line text-blue-600"></i>
+</div>
+<div class="flex-1">
+<p class="text-sm font-medium text-gray-900">Michael Chen joined as volunteer</p>
+<p class="text-xs text-gray-500">4 hours ago</p>
+</div>
+</div>
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+<i class="ri-truck-line text-orange-600"></i>
+</div>
+<div class="flex-1">
+<p class="text-sm font-medium text-gray-900">Delivery completed to Downtown Shelter</p>
+<p class="text-xs text-gray-500">6 hours ago</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="volunteers" class="section hidden">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-xl font-semibold text-gray-900">Volunteer Management</h3>
+<button onclick="openVolunteerModal()" class="btn-primary px-4 py-2 rounded-button whitespace-nowrap !rounded-button">
+<i class="ri-add-line mr-2"></i>Add Volunteer
+</button>
+</div>
+<div class="bg-white rounded-xl card-shadow overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full">
+<thead class="bg-gray-50 border-b border-gray-200">
+<tr>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Name</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Email</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Phone</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">City</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Join Date</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Status</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Actions</th>
+</tr>
+</thead>
+<tbody id="volunteers-table" class="divide-y divide-gray-200">
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="donors" class="section hidden">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-xl font-semibold text-gray-900">Donor Management</h3>
+<button onclick="openDonorModal()" class="btn-primary px-4 py-2 rounded-button whitespace-nowrap !rounded-button">
+<i class="ri-add-line mr-2"></i>Add Donor
+</button>
+</div>
+<div class="bg-white rounded-xl card-shadow overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full">
+<thead class="bg-gray-50 border-b border-gray-200">
+<tr>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Name</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Email</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Food Type</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Quantity</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Status</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Actions</th>
+</tr>
+</thead>
+<tbody id="donors-table" class="divide-y divide-gray-200">
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="donations" class="section hidden">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-xl font-semibold text-gray-900">Donation Records</h3>
+<div class="flex space-x-3">
+<select id="status-filter" class="px-4 py-2 border border-gray-300 rounded-lg text-sm">
+<option value="">All Status</option>
+<option value="Pending">Pending</option>
+<option value="Collected">Collected</option>
+<option value="Delivered">Delivered</option>
+</select>
+<button onclick="openDonationModal()" class="btn-primary px-4 py-2 rounded-button whitespace-nowrap !rounded-button">
+<i class="ri-add-line mr-2"></i>Add Donation
+</button>
+</div>
+</div>
+<div class="bg-white rounded-xl card-shadow overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full">
+<thead class="bg-gray-50 border-b border-gray-200">
+<tr>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Donor Name</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Email</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Food Item</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Qty</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Date/Time</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Status</th>
+</tr>
+</thead>
+<tbody id="donations-table" class="divide-y divide-gray-200">
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="leaderboard" class="section hidden">
+<h3 class="text-xl font-semibold text-gray-900 mb-6">Leaderboard</h3>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="bg-white rounded-xl card-shadow p-6">
+<h4 class="text-lg font-semibold text-gray-900 mb-4">Top Volunteers</h4>
+<div class="space-y-4" id="volunteer-leaderboard">
+</div>
+</div>
+<div class="bg-white rounded-xl card-shadow p-6">
+<h4 class="text-lg font-semibold text-gray-900 mb-4">Top Donors</h4>
+<div class="space-y-4" id="donor-leaderboard">
+</div>
+</div>
+</div>
+</div>
+<div id="map" class="section hidden">
+<h3 class="text-xl font-semibold text-gray-900 mb-6">Donation Locations</h3>
+<div class="bg-white rounded-xl card-shadow overflow-hidden">
+<div class="h-96 relative" style="background-image: url('https://public.readdy.ai/gen_page/map_placeholder_1280x720.png'); background-size: cover; background-position: center;">
+<div class="absolute top-4 left-4 bg-white p-3 rounded-lg shadow-md">
+<h4 class="font-semibold text-gray-900 mb-2">Active Donations</h4>
+<div class="space-y-2 text-sm">
+<div class="flex items-center space-x-2">
+<div class="w-3 h-3 bg-red-500 rounded-full"></div>
+<span>Pending (8)</span>
+</div>
+<div class="flex items-center space-x-2">
+<div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+<span>In Transit (5)</span>
+</div>
+<div class="flex items-center space-x-2">
+<div class="w-3 h-3 bg-green-500 rounded-full"></div>
+<span>Delivered (12)</span>
+</div>
+</div>
+</div>
+<div class="absolute top-20 left-20 w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-md"></div>
+<div class="absolute top-32 right-32 w-4 h-4 bg-yellow-500 rounded-full border-2 border-white shadow-md"></div>
+<div class="absolute bottom-20 left-32 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-md"></div>
+<div class="absolute bottom-32 right-20 w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-md"></div>
+<div class="absolute top-40 left-1/2 w-4 h-4 bg-yellow-500 rounded-full border-2 border-white shadow-md"></div>
+</div>
+</div>
+</div>
+<div id="messages" class="section hidden">
+<h3 class="text-xl font-semibold text-gray-900 mb-6">Messages</h3>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="bg-white rounded-xl card-shadow p-6">
+<h4 class="font-semibold text-gray-900 mb-4">Select User</h4>
+<select id="message-user-select" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+<option value="">Choose a user...</option>
+<option value="volunteer1">John Smith (Volunteer)</option>
+<option value="volunteer2">Emily Davis (Volunteer)</option>
+<option value="donor1">Sarah Johnson (Donor)</option>
+<option value="donor2">Michael Chen (Donor)</option>
+</select>
+</div>
+<div class="lg:col-span-2 bg-white rounded-xl card-shadow flex flex-col h-96">
+<div class="p-4 border-b border-gray-200">
+<h4 class="font-semibold text-gray-900" id="chat-header">Select a user to start messaging</h4>
+</div>
+<div class="flex-1 p-4 overflow-y-auto" id="chat-messages">
+<div class="text-center text-gray-500 text-sm">No messages yet</div>
+</div>
+<div class="p-4 border-t border-gray-200">
+<div class="flex space-x-3">
+<input type="text" id="message-input" placeholder="Type your message..." class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">
+<button onclick="sendMessage()" class="btn-primary px-4 py-2 rounded-button whitespace-nowrap !rounded-button">
+<i class="ri-send-plane-line"></i>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="broadcast" class="section hidden">
+<h3 class="text-xl font-semibold text-gray-900 mb-6">Broadcast Messages</h3>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="bg-white rounded-xl card-shadow p-6">
+<h4 class="font-semibold text-gray-900 mb-4">Send Broadcast</h4>
+<form id="broadcast-form" class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
+<input type="text" id="broadcast-title" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Enter broadcast title">
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+<textarea id="broadcast-message" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Enter your message"></textarea>
+</div>
+<button type="submit" class="btn-primary px-6 py-2 rounded-button whitespace-nowrap !rounded-button">
+<i class="ri-broadcast-line mr-2"></i>Send Broadcast
+</button>
+</form>
+</div>
+<div class="bg-white rounded-xl card-shadow p-6">
+<h4 class="font-semibold text-gray-900 mb-4">Recent Broadcasts</h4>
+<div id="broadcast-history" class="space-y-4">
+</div>
+</div>
+</div>
+</div>
+<div id="reports" class="section hidden">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-xl font-semibold text-gray-900">Activity Reports</h3>
+<div class="flex space-x-3">
+<button class="btn-secondary px-4 py-2 rounded-button whitespace-nowrap !rounded-button">
+<i class="ri-file-pdf-line mr-2"></i>Export PDF
+</button>
+<button class="btn-primary px-4 py-2 rounded-button whitespace-nowrap !rounded-button">
+<i class="ri-file-excel-line mr-2"></i>Export CSV
+</button>
+</div>
+</div>
+<div class="bg-white rounded-xl card-shadow overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full">
+<thead class="bg-gray-50 border-b border-gray-200">
+<tr>
+<th class="text-left py-3 px-6 font-medium text-gray-700">User</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Action</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Date</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Type</th>
+<th class="text-left py-3 px-6 font-medium text-gray-700">Details</th>
+</tr>
+</thead>
+<tbody id="reports-table" class="divide-y divide-gray-200">
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="settings" class="section hidden">
+<h3 class="text-xl font-semibold text-gray-900 mb-6">Settings</h3>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="bg-white rounded-xl card-shadow p-6">
+<h4 class="font-semibold text-gray-900 mb-4">Admin Profile</h4>
+<form id="admin-profile-form" class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+<input type="text" id="admin-name" value="Admin User" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+<input type="email" id="admin-email" value="admin@lacso.org" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+<input type="password" id="admin-password" value="password123" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+</div>
+<button type="submit" class="btn-primary px-6 py-2 rounded-button whitespace-nowrap !rounded-button">
+Update Profile
+</button>
+</form>
+</div>
+<div class="bg-white rounded-xl card-shadow p-6">
+<h4 class="font-semibold text-gray-900 mb-4">System Settings</h4>
+<div class="space-y-6">
+<div class="flex items-center justify-between">
+<div>
+<h5 class="font-medium text-gray-900">Dark Mode</h5>
+<p class="text-sm text-gray-600">Toggle dark mode theme</p>
+</div>
+<label class="switch">
+<input type="checkbox" id="dark-mode-toggle">
+<span class="slider"></span>
+</label>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<h5 class="font-medium text-gray-900">Email Notifications</h5>
+<p class="text-sm text-gray-600">Receive email updates</p>
+</div>
+<label class="switch">
+<input type="checkbox" id="email-notifications" checked>
+<span class="slider"></span>
+</label>
+</div>
+<div class="pt-4 border-t border-gray-200">
+<button onclick="logout()" class="w-full btn-primary px-6 py-2 rounded-button whitespace-nowrap !rounded-button bg-red-600 hover:bg-red-700">
+<i class="ri-logout-box-line mr-2"></i>Logout
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+<div id="volunteer-modal" class="modal">
+<div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-lg font-semibold text-gray-900" id="volunteer-modal-title">Add Volunteer</h3>
+<button onclick="closeVolunteerModal()" class="text-gray-400 hover:text-gray-600">
+<i class="ri-close-line text-xl"></i>
+</button>
+</div>
+<form id="volunteer-form" class="space-y-4">
+<input type="hidden" id="volunteer-id">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+<input type="text" id="volunteer-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+<input type="email" id="volunteer-email" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+<input type="tel" id="volunteer-phone" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+<input type="text" id="volunteer-city" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+</div>
+<div class="flex space-x-3 pt-4">
+<button type="button" onclick="closeVolunteerModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-button whitespace-nowrap !rounded-button">
+Cancel
+</button>
+<button type="submit" class="flex-1 btn-primary px-4 py-2 rounded-button whitespace-nowrap !rounded-button">
+Save
+</button>
+</div>
+</form>
+</div>
+</div>
+<div id="donor-modal" class="modal">
+<div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-lg font-semibold text-gray-900" id="donor-modal-title">Add Donor</h3>
+<button onclick="closeDonorModal()" class="text-gray-400 hover:text-gray-600">
+<i class="ri-close-line text-xl"></i>
+</button>
+</div>
+<form id="donor-form" class="space-y-4">
+<input type="hidden" id="donor-id">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+<input type="text" id="donor-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+<input type="email" id="donor-email" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Food Type</label>
+<input type="text" id="donor-food-type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+<input type="text" id="donor-quantity" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+<select id="donor-status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+<option value="Pending">Pending</option>
+<option value="Collected">Collected</option>
+<option value="Delivered">Delivered</option>
+</select>
+</div>
+<div class="flex space-x-3 pt-4">
+<button type="button" onclick="closeDonorModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-button whitespace-nowrap !rounded-button">
+Cancel
+</button>
+<button type="submit" class="flex-1 btn-primary px-4 py-2 rounded-button whitespace-nowrap !rounded-button">
+Save
+</button>
+</div>
+</form>
+</div>
+</div>
+<div id="donation-modal" class="modal">
+<div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-lg font-semibold text-gray-900" id="donation-modal-title">Add Donation</h3>
+<button onclick="closeDonationModal()" class="text-gray-400 hover:text-gray-600">
+<i class="ri-close-line text-xl"></i>
+</button>
+</div>
+<form id="donation-form" class="space-y-4">
+<input type="hidden" id="donation-id">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Donor Name</label>
+<input type="text" id="donation-donor-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Food Type</label>
+<input type="text" id="donation-food-type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+<input type="text" id="donation-quantity" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Pickup Date</label>
+<input type="date" id="donation-pickup-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+<select id="donation-status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+<option value="Pending">Pending</option>
+<option value="Collected">Collected</option>
+<option value="Delivered">Delivered</option>
+</select>
+</div>
+<div class="flex space-x-3 pt-4">
+<button type="button" onclick="closeDonationModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-button whitespace-nowrap !rounded-button">
+Cancel
+</button>
+<button type="submit" class="flex-1 btn-primary px-4 py-2 rounded-button whitespace-nowrap !rounded-button">
+Save
+</button>
+</div>
+</form>
+</div>
+</div>
+<script id="navigation-script">
+document.addEventListener('DOMContentLoaded', function() {
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('.section');
+const pageTitle = document.getElementById('page-title');
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const sidebar = document.getElementById('sidebar');
+navItems.forEach(item => {
+item.addEventListener('click', function(e) {
+e.preventDefault();
+navItems.forEach(nav => nav.classList.remove('active'));
+this.classList.add('active');
+const targetSection = this.getAttribute('data-section');
+sections.forEach(section => {
+section.classList.add('hidden');
+});
+document.getElementById(targetSection).classList.remove('hidden');
+pageTitle.textContent = this.textContent.trim();
+if (window.innerWidth < 768) {
+sidebar.classList.remove('mobile-open');
+}
+});
+});
+mobileMenuBtn.addEventListener('click', function() {
+sidebar.classList.toggle('mobile-open');
+});
+document.addEventListener('click', function(e) {
+if (window.innerWidth < 768 && !sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+sidebar.classList.remove('mobile-open');
+}
+});
+});
+</script>
+<script id="data-management-script">
+document.addEventListener('DOMContentLoaded', function() {
+initializeData();
+loadVolunteers();
+loadDonors();
+loadDonations();
+loadLeaderboard();
+loadReports();
+loadBroadcastHistory();
+initializeChart();
+});
+function initializeData() {
+  // Bridge with Main App Data
+  const mainUsers = JSON.parse(localStorage.getItem('users')) || [];
+  const mainDonations = JSON.parse(localStorage.getItem('activeDonations')) || [];
+  
+  // Update volunteers key if needed for dashboard
+  if (!localStorage.getItem('volunteers')) {
+    const defaultVolunteers = [
+      { id: 1, name: 'Volunteer 1', email: 'volunteer1', phone: '+91-9876543210', city: 'Mumbai', joinDate: '2024-01-15', status: 'Active', approved: true, points: 250 },
+      { id: 2, name: 'Volunteer 2', email: 'volunteer2', phone: '+91-9876543211', city: 'Delhi', joinDate: '2024-02-20', status: 'Active', approved: true, points: 180 },
+      { id: 3, name: 'Volunteer 3', email: 'volunteer3', phone: '+91-9876543212', city: 'Surat', joinDate: '2024-03-10', status: 'Active', approved: true, points: 320 }
+    ];
+    localStorage.setItem('volunteers', JSON.stringify(defaultVolunteers));
+  }
+
+  // Force sync from Main App
+  localStorage.setItem('donors', JSON.stringify(mainUsers.filter(u => u.role === 'donor')));
+  localStorage.setItem('donations', JSON.stringify(mainDonations));
+  
+  // Initialize default reports if empty
+  if (!localStorage.getItem('reports')) {
+    const reports = mainDonations.map((d, i) => ({
+      id: i + 1,
+      user: d.donorName,
+      action: 'Donation Submitted',
+      date: d.time,
+      type: 'Donor',
+      details: `${d.foodName} - ${d.quantity}`
+    }));
+    localStorage.setItem('reports', JSON.stringify(reports));
+  }
+}
+
+function loadVolunteers() {
+  const volunteers = JSON.parse(localStorage.getItem('volunteers') || '[]');
+  const tbody = document.getElementById('volunteers-table');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  volunteers.forEach(volunteer => {
+    const row = document.createElement('tr');
+    const statusClass = volunteer.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+    row.innerHTML = `
+      <td class="py-3 px-6">${volunteer.name}</td>
+      <td class="py-3 px-6">${volunteer.email}</td>
+      <td class="py-3 px-6">${volunteer.phone}</td>
+      <td class="py-3 px-6">${volunteer.city}</td>
+      <td class="py-3 px-6">${volunteer.joinDate}</td>
+      <td class="py-3 px-6"><span class="px-2 py-1 text-xs rounded-full ${statusClass}">${volunteer.status}</span></td>
+      <td class="py-3 px-6"><div class="flex space-x-2"><i class="ri-edit-line text-blue-600 cursor-pointer"></i></div></td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function loadDonors() {
+  const donors = JSON.parse(localStorage.getItem('donors') || '[]');
+  const tbody = document.getElementById('donors-table');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  donors.forEach(donor => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td class="py-3 px-6">${donor.name}</td>
+      <td class="py-3 px-6">${donor.email}</td>
+      <td class="py-3 px-6">Mixed</td>
+      <td class="py-3 px-6">-</td>
+      <td class="py-3 px-6"><span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Verified</span></td>
+      <td class="py-3 px-6"><i class="ri-eye-line text-blue-600 cursor-pointer"></i></td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function loadDonations() {
+  const donations = JSON.parse(localStorage.getItem('activeDonations') || '[]');
+  const users = JSON.parse(localStorage.getItem('users') || '[]');
+  const tbody = document.getElementById('donations-table');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  donations.reverse().forEach(donation => {
+    // Attempt to find user email
+    const donorUser = users.find(u => u.name === donation.donorName);
+    const donorEmail = donorUser ? donorUser.email : (donation.email || "N/A");
+    
+    const row = document.createElement('tr');
+    const statusClass = donation.status === 'Accepted' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800';
+    row.innerHTML = `
+      <td class="py-4 px-6 font-medium text-gray-900">${donation.donorName}</td>
+      <td class="py-4 px-6 text-gray-500 text-sm">${donorEmail}</td>
+      <td class="py-4 px-6 text-gray-600">${donation.foodName}</td>
+      <td class="py-4 px-6 font-bold text-gray-900">${donation.quantity} kg</td>
+      <td class="py-4 px-6 text-gray-500 text-xs">${donation.time}</td>
+      <td class="py-4 px-6">
+        <span class="px-3 py-1 text-xs font-bold rounded-full ${statusClass}">
+          ${donation.status || 'Pending'}
+        </span>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function loadReports() {
+  const donations = JSON.parse(localStorage.getItem('donations') || '[]');
+  const tbody = document.getElementById('reports-table');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  donations.reverse().forEach(d => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td class="py-3 px-6">${d.donorName}</td>
+      <td class="py-3 px-6">Donation Submitted</td>
+      <td class="py-3 px-6">${d.time}</td>
+      <td class="py-3 px-6"><span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Donor</span></td>
+      <td class="py-3 px-6">${d.foodName} (${d.quantity})</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function loadLeaderboard() {
+  const donors = JSON.parse(localStorage.getItem('donors') || '[]');
+  const volunteers = JSON.parse(localStorage.getItem('volunteers') || '[]');
+  
+  const vList = document.getElementById('volunteer-leaderboard');
+  const dList = document.getElementById('donor-leaderboard');
+  if (!vList || !dList) return;
+
+  vList.innerHTML = '';
+  volunteers.slice(0, 3).forEach((v, index) => {
+    vList.innerHTML += `
+      <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+        <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold">${index + 1}</div>
+        <div class="flex-1 font-medium text-gray-900">${v.name}</div>
+        <div class="text-primary font-bold">${v.points} pts</div>
+      </div>`;
+  });
+
+  dList.innerHTML = '';
+  donors.slice(0, 5).forEach((d, index) => {
+    dList.innerHTML += `
+      <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+        <div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-white font-bold">${index + 1}</div>
+        <div class="flex-1 font-medium text-gray-900">${d.name}</div>
+        <div class="text-secondary font-bold">${Math.floor(Math.random()*100) + 10} kg</div>
+      </div>`;
+  });
+}
+
+function loadBroadcastHistory() {
+  const broadcasts = JSON.parse(localStorage.getItem('broadcasts') || '[]');
+  const container = document.getElementById('broadcast-history');
+  if (!container) return;
+  container.innerHTML = '';
+  broadcasts.reverse().forEach(broadcast => {
+    const div = document.createElement('div');
+    div.className = 'p-4 bg-gray-50 rounded-lg';
+    div.innerHTML = `
+      <h5 class="font-medium text-gray-900 mb-2">${broadcast.title}</h5>
+      <p class="text-sm text-gray-600 mb-2">${broadcast.message}</p>
+      <p class="text-xs text-gray-500">${broadcast.date}</p>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function initializeChart() {
+const chartDom = document.getElementById('donationChart');
+const myChart = echarts.init(chartDom);
+const option = {
+animation: false,
+grid: { top: 0, right: 0, bottom: 0, left: 0 },
+xAxis: {
+type: 'category',
+data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+axisLine: { show: false },
+axisTick: { show: false }
+},
+yAxis: {
+type: 'value',
+axisLine: { show: false },
+axisTick: { show: false },
+splitLine: { show: false }
+},
+series: [{
+data: [120, 200, 150, 80, 70, 110, 130],
+type: 'line',
+smooth: true,
+lineStyle: { color: 'rgba(87, 181, 231, 1)' },
+areaStyle: {
+color: {
+type: 'linear',
+x: 0, y: 0, x2: 0, y2: 1,
+colorStops: [
+{ offset: 0, color: 'rgba(87, 181, 231, 0.1)' },
+{ offset: 1, color: 'rgba(87, 181, 231, 0.01)' }
+]
+}
+},
+showSymbol: false
+}],
+tooltip: {
+trigger: 'axis',
+backgroundColor: 'rgba(255, 255, 255, 0.9)',
+textStyle: { color: '#1f2937' }
+}
+};
+myChart.setOption(option);
+}
+</script>
+<script id="modal-management-script">
+function openVolunteerModal(id = null) {
+const modal = document.getElementById('volunteer-modal');
+const form = document.getElementById('volunteer-form');
+const title = document.getElementById('volunteer-modal-title');
+if (id) {
+const volunteers = JSON.parse(localStorage.getItem('volunteers') || '[]');
+const volunteer = volunteers.find(v => v.id === id);
+if (volunteer) {
+document.getElementById('volunteer-id').value = volunteer.id;
+document.getElementById('volunteer-name').value = volunteer.name;
+document.getElementById('volunteer-email').value = volunteer.email;
+document.getElementById('volunteer-phone').value = volunteer.phone;
+document.getElementById('volunteer-city').value = volunteer.city;
+title.textContent = 'Edit Volunteer';
+}
+} else {
+form.reset();
+document.getElementById('volunteer-id').value = '';
+title.textContent = 'Add Volunteer';
+}
+modal.classList.add('show');
+}
+function closeVolunteerModal() {
+document.getElementById('volunteer-modal').classList.remove('show');
+}
+function openDonorModal(id = null) {
+const modal = document.getElementById('donor-modal');
+const form = document.getElementById('donor-form');
+const title = document.getElementById('donor-modal-title');
+if (id) {
+const donors = JSON.parse(localStorage.getItem('donors') || '[]');
+const donor = donors.find(d => d.id === id);
+if (donor) {
+document.getElementById('donor-id').value = donor.id;
+document.getElementById('donor-name').value = donor.name;
+document.getElementById('donor-email').value = donor.email;
+document.getElementById('donor-food-type').value = donor.foodType;
+document.getElementById('donor-quantity').value = donor.quantity;
+document.getElementById('donor-status').value = donor.status;
+title.textContent = 'Edit Donor';
+}
+} else {
+form.reset();
+document.getElementById('donor-id').value = '';
+title.textContent = 'Add Donor';
+}
+modal.classList.add('show');
+}
+function closeDonorModal() {
+document.getElementById('donor-modal').classList.remove('show');
+}
+function openDonationModal(id = null) {
+const modal = document.getElementById('donation-modal');
+const form = document.getElementById('donation-form');
+const title = document.getElementById('donation-modal-title');
+if (id) {
+const donations = JSON.parse(localStorage.getItem('donations') || '[]');
+const donation = donations.find(d => d.id === id);
+if (donation) {
+document.getElementById('donation-id').value = donation.id;
+document.getElementById('donation-donor-name').value = donation.donorName;
+document.getElementById('donation-food-type').value = donation.foodType;
+document.getElementById('donation-quantity').value = donation.quantity;
+document.getElementById('donation-pickup-date').value = donation.pickupDate;
+document.getElementById('donation-status').value = donation.status;
+title.textContent = 'Edit Donation';
+}
+} else {
+form.reset();
+document.getElementById('donation-id').value = '';
+title.textContent = 'Add Donation';
+}
+modal.classList.add('show');
+}
+function closeDonationModal() {
+document.getElementById('donation-modal').classList.remove('show');
+}
+function editVolunteer(id) {
+openVolunteerModal(id);
+}
+function deleteVolunteer(id) {
+if (confirm('Are you sure you want to delete this volunteer?')) {
+let volunteers = JSON.parse(localStorage.getItem('volunteers') || '[]');
+volunteers = volunteers.filter(v => v.id !== id);
+localStorage.setItem('volunteers', JSON.stringify(volunteers));
+loadVolunteers();
+loadLeaderboard();
+}
+}
+function editDonor(id) {
+openDonorModal(id);
+}
+function deleteDonor(id) {
+if (confirm('Are you sure you want to delete this donor?')) {
+let donors = JSON.parse(localStorage.getItem('donors') || '[]');
+donors = donors.filter(d => d.id !== id);
+localStorage.setItem('donors', JSON.stringify(donors));
+loadDonors();
+loadLeaderboard();
+}
+}
+function editDonation(id) {
+openDonationModal(id);
+}
+function deleteDonation(id) {
+if (confirm('Are you sure you want to delete this donation?')) {
+let donations = JSON.parse(localStorage.getItem('donations') || '[]');
+donations = donations.filter(d => d.id !== id);
+localStorage.setItem('donations', JSON.stringify(donations));
+loadDonations();
+}
+}
+</script>
+<script id="form-handlers-script">
+document.addEventListener('DOMContentLoaded', function() {
+document.getElementById('volunteer-form').addEventListener('submit', function(e) {
+e.preventDefault();
+const volunteers = JSON.parse(localStorage.getItem('volunteers') || '[]');
+const id = document.getElementById('volunteer-id').value;
+const volunteerData = {
+name: document.getElementById('volunteer-name').value,
+email: document.getElementById('volunteer-email').value,
+phone: document.getElementById('volunteer-phone').value,
+city: document.getElementById('volunteer-city').value,
+joinDate: id ? volunteers.find(v => v.id == id).joinDate : new Date().toISOString().split('T')[0],
+status: 'Active',
+points: id ? volunteers.find(v => v.id == id).points : 0
+};
+if (id) {
+const index = volunteers.findIndex(v => v.id == id);
+volunteers[index] = { ...volunteerData, id: parseInt(id) };
+} else {
+const newId = volunteers.length > 0 ? Math.max(...volunteers.map(v => v.id)) + 1 : 1;
+volunteers.push({ ...volunteerData, id: newId });
+}
+localStorage.setItem('volunteers', JSON.stringify(volunteers));
+loadVolunteers();
+loadLeaderboard();
+closeVolunteerModal();
+});
+document.getElementById('donor-form').addEventListener('submit', function(e) {
+e.preventDefault();
+const donors = JSON.parse(localStorage.getItem('donors') || '[]');
+const id = document.getElementById('donor-id').value;
+const donorData = {
+name: document.getElementById('donor-name').value,
+email: document.getElementById('donor-email').value,
+foodType: document.getElementById('donor-food-type').value,
+quantity: document.getElementById('donor-quantity').value,
+status: document.getElementById('donor-status').value,
+points: id ? donors.find(d => d.id == id).points : Math.floor(Math.random() * 200) + 50
+};
+if (id) {
+const index = donors.findIndex(d => d.id == id);
+donors[index] = { ...donorData, id: parseInt(id) };
+} else {
+const newId = donors.length > 0 ? Math.max(...donors.map(d => d.id)) + 1 : 1;
+donors.push({ ...donorData, id: newId });
+}
+localStorage.setItem('donors', JSON.stringify(donors));
+loadDonors();
+loadLeaderboard();
+closeDonorModal();
+});
+document.getElementById('donation-form').addEventListener('submit', function(e) {
+e.preventDefault();
+const donations = JSON.parse(localStorage.getItem('donations') || '[]');
+const id = document.getElementById('donation-id').value;
+const donationData = {
+donorName: document.getElementById('donation-donor-name').value,
+foodType: document.getElementById('donation-food-type').value,
+quantity: document.getElementById('donation-quantity').value,
+pickupDate: document.getElementById('donation-pickup-date').value,
+status: document.getElementById('donation-status').value
+};
+if (id) {
+const index = donations.findIndex(d => d.id == id);
+donations[index] = { ...donationData, id: parseInt(id) };
+} else {
+const newId = donations.length > 0 ? Math.max(...donations.map(d => d.id)) + 1 : 1;
+donations.push({ ...donationData, id: newId });
+}
+localStorage.setItem('donations', JSON.stringify(donations));
+loadDonations();
+closeDonationModal();
+});
+document.getElementById('status-filter').addEventListener('change', function() {
+loadDonations();
+});
+document.getElementById('broadcast-form').addEventListener('submit', function(e) {
+e.preventDefault();
+const broadcasts = JSON.parse(localStorage.getItem('broadcasts') || '[]');
+const title = document.getElementById('broadcast-title').value;
+const message = document.getElementById('broadcast-message').value;
+const newBroadcast = {
+id: broadcasts.length > 0 ? Math.max(...broadcasts.map(b => b.id)) + 1 : 1,
+title: title,
+message: message,
+date: new Date().toLocaleString()
+};
+broadcasts.unshift(newBroadcast);
+localStorage.setItem('broadcasts', JSON.stringify(broadcasts));
+loadBroadcastHistory();
+document.getElementById('broadcast-form').reset();
+alert('Broadcast sent successfully!');
+});
+document.getElementById('admin-profile-form').addEventListener('submit', function(e) {
+e.preventDefault();
+alert('Profile updated successfully!');
+});
+});
+</script>
+<script id="messaging-script">
+let currentChatUser = null;
+const chatMessages = {
+volunteer1: [
+{ sender: 'John Smith', message: 'Hello! I have a question about today\'s delivery.', time: '10:30 AM', isUser: false },
+{ sender: 'Admin', message: 'Hi John! What can I help you with?', time: '10:32 AM', isUser: true }
+],
+volunteer2: [
+{ sender: 'Emily Davis', message: 'The pickup location has changed. Can you update it?', time: '2:15 PM', isUser: false }
+],
+donor1: [
+{ sender: 'Sarah Johnson', message: 'When will my donation be collected?', time: '9:45 AM', isUser: false },
+{ sender: 'Admin', message: 'We\'ll collect it tomorrow between 2-4 PM.', time: '9:50 AM', isUser: true }
+],
+donor2: []
+};
+document.addEventListener('DOMContentLoaded', function() {
+document.getElementById('message-user-select').addEventListener('change', function() {
+const selectedUser = this.value;
+if (selectedUser) {
+currentChatUser = selectedUser;
+loadChatMessages(selectedUser);
+updateChatHeader(selectedUser);
+} else {
+currentChatUser = null;
+document.getElementById('chat-messages').innerHTML = '<div class="text-center text-gray-500 text-sm">Select a user to start messaging</div>';
+document.getElementById('chat-header').textContent = 'Select a user to start messaging';
+}
+});
+document.getElementById('message-input').addEventListener('keypress', function(e) {
+if (e.key === 'Enter') {
+sendMessage();
+}
+});
+});
+function loadChatMessages(userId) {
+const messages = chatMessages[userId] || [];
+const container = document.getElementById('chat-messages');
+container.innerHTML = '';
+if (messages.length === 0) {
+container.innerHTML = '<div class="text-center text-gray-500 text-sm">No messages yet</div>';
+return;
+}
+messages.forEach(msg => {
+const messageDiv = document.createElement('div');
+messageDiv.className = `flex ${msg.isUser ? 'justify-end' : 'justify-start'} mb-4`;
+messageDiv.innerHTML = `
+<div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${msg.isUser ? 'bg-primary text-white' : 'bg-gray-200 text-gray-900'}">
+<p class="text-sm">${msg.message}</p>
+<p class="text-xs mt-1 ${msg.isUser ? 'text-blue-100' : 'text-gray-500'}">${msg.time}</p>
+</div>
+`;
+container.appendChild(messageDiv);
+});
+container.scrollTop = container.scrollHeight;
+}
+function updateChatHeader(userId) {
+const userNames = {
+volunteer1: 'John Smith (Volunteer)',
+volunteer2: 'Emily Davis (Volunteer)',
+donor1: 'Sarah Johnson (Donor)',
+donor2: 'Michael Chen (Donor)'
+};
+document.getElementById('chat-header').textContent = userNames[userId] || 'Unknown User';
+}
+function sendMessage() {
+if (!currentChatUser) return;
+const input = document.getElementById('message-input');
+const message = input.value.trim();
+if (!message) return;
+if (!chatMessages[currentChatUser]) {
+chatMessages[currentChatUser] = [];
+}
+const newMessage = {
+sender: 'Admin',
+message: message,
+time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+isUser: true
+};
+chatMessages[currentChatUser].push(newMessage);
+loadChatMessages(currentChatUser);
+input.value = '';
+}
+</script>
+<script id="settings-script">
+
+
+/*
+  // Users list fetch karne ke liye
+  fetch('get_users.php')
+    .then(res => res.json())
+    .then(users => {
+      // Yahan users ko HTML me show karna hai
+    });
+
+  // User add karne ke liye form submit par
+  document.getElementById('userForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    fetch('add_user.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email })
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert('User Added!');
+      location.reload();
+    });
+  });
+*/
+
+document.addEventListener('DOMContentLoaded', function() {
+  updateAdminPanel();
+  
+  const darkModeToggle = document.getElementById('dark-mode-toggle');
+  const emailNotifications = document.getElementById('email-notifications');
+  darkModeToggle.addEventListener('change', function() {
+    if (this.checked) {
+      alert('Dark mode feature will be implemented in future updates!');
+      this.checked = false;
+    }
+  });
+  emailNotifications.addEventListener('change', function() {
+    const status = this.checked ? 'enabled' : 'disabled';	
+    alert(`Email notifications ${status}!`);
+  });
+});
+
+function updateAdminPanel() {
+  // 1. Load Data
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  const donations = JSON.parse(localStorage.getItem("activeDonations")) || [];
+  const broadcasts = JSON.parse(localStorage.getItem("broadcasts")) || [];
+  const donors = users.filter(u => u.role === "donor");
+  
+  // 2. Update Dashboard Stats
+  const totalFood = donations.reduce((acc, curr) => acc + parseInt(curr.quantity || 0), 0);
+  document.getElementById('total-food-donated').textContent = totalFood + " kg";
+  document.getElementById('active-donors-count').textContent = donors.length;
+  document.getElementById('volunteers-count').textContent = "3"; 
+  document.getElementById('deliveries-count').textContent = donations.length;
+
+  // 3. Update Donors Table
+  const donorTable = document.getElementById('donors-table');
+  donorTable.innerHTML = "";
+  donors.forEach(donor => {
+    const row = `
+      <tr>
+        <td class="py-3 px-6">${donor.name}</td>
+        <td class="py-3 px-6">${donor.email}</td>
+        <td class="py-3 px-6">Generic</td>
+        <td class="py-3 px-6">-</td>
+        <td class="py-3 px-6"><span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Active</span></td>
+        <td class="py-3 px-6">
+          <button onclick="alert('Donor details for ${donor.name}')" class="text-blue-600 hover:text-blue-900"><i class="ri-eye-line"></i></button>
+        </td>
+      </tr>`;
+    donorTable.insertAdjacentHTML('beforeend', row);
+  });
+
+  // 4. Update Donations Table
+  const donationsTable = document.getElementById('donations-table');
+  donationsTable.innerHTML = "";
+  donations.forEach(d => {
+    const row = `
+      <tr>
+        <td class="py-3 px-6 font-medium">${d.donorName}</td>
+        <td class="py-3 px-6">${d.foodName}</td>
+        <td class="py-3 px-6">${d.quantity}</td>
+        <td class="py-3 px-6">${d.time}</td>
+        <td class="py-3 px-6">
+          <span class="px-2 py-1 ${d.status === 'Accepted' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'} text-xs rounded-full">
+            ${d.status || 'Pending'}
+          </span>
+        </td>
+        <td class="py-3 px-6">
+           <button class="text-gray-400 hover:text-primary"><i class="ri-more-2-fill"></i></button>
+        </td>
+      </tr>`;
+    donationsTable.insertAdjacentHTML('beforeend', row);
+  });
+
+  // 5. Update Leaderboard
+  const donorLeaderboard = document.getElementById('donor-leaderboard');
+  const donorStats = {};
+  donations.forEach(d => {
+    donorStats[d.donorName] = (donorStats[d.donorName] || 0) + parseInt(d.quantity || 0);
+  });
+  const sortedDonors = Object.entries(donorStats).sort((a,b) => b[1] - a[1]);
+  
+  donorLeaderboard.innerHTML = "";
+  sortedDonors.slice(0, 5).forEach(([name, qty], index) => {
+    const item = `
+      <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+        <div class="flex items-center space-x-3">
+          <span class="font-bold text-gray-400">#${index+1}</span>
+          <span class="font-medium text-gray-900">${name}</span>
+        </div>
+        <span class="text-primary font-bold">${qty} kg</span>
+      </div>`;
+    donorLeaderboard.insertAdjacentHTML('beforeend', item);
+  });
+
+  // 6. Update Reports Section
+  const reportsSection = document.getElementById('reports');
+  const reportsContent = reportsSection.querySelector(".grid") || document.createElement("div");
+  reportsContent.className = "grid grid-cols-1 md:grid-cols-3 gap-6 mb-8";
+  reportsContent.innerHTML = `
+    <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+      <h5 class="text-blue-700 font-bold mb-2">Efficiency Rate</h5>
+      <p class="text-3xl font-bold text-blue-900">94.2%</p>
+    </div>
+    <div class="bg-green-50 p-6 rounded-xl border border-green-100">
+      <h5 class="text-green-700 font-bold mb-2">Total Impact</h5>
+      <p class="text-3xl font-bold text-green-900">${totalFood} kg</p>
+    </div>
+    <div class="bg-purple-50 p-6 rounded-xl border border-purple-100">
+      <h5 class="text-purple-700 font-bold mb-2">Growth</h5>
+      <p class="text-3xl font-bold text-purple-900">+12.5%</p>
+    </div>
+  `;
+  if (!reportsSection.contains(reportsContent)) reportsSection.appendChild(reportsContent);
+
+  // 7. Update Broadcast History
+  const broadcastHistory = document.getElementById('broadcast-history');
+  broadcastHistory.innerHTML = "";
+  broadcasts.reverse().forEach(b => {
+    const card = `
+      <div class="p-4 border border-gray-100 rounded-xl bg-gray-50">
+        <h5 class="font-bold text-gray-900">${b.title}</h5>
+        <p class="text-sm text-gray-600 mt-1">${b.message}</p>
+        <span class="text-[10px] text-gray-400 mt-2 block">${b.date}</span>
+      </div>`;
+    broadcastHistory.insertAdjacentHTML('beforeend', card);
+  });
+
+  // 8. Recent Activities
+  const activityList = document.querySelector(".space-y-4");
+  if (activityList && donations.length > 0) {
+    activityList.innerHTML = "";
+    donations.slice(-3).reverse().forEach(latest => {
+      const item = `
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+            <i class="ri-heart-pulse-line text-green-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-gray-900">${latest.donorName} donated ${latest.foodName}</p>
+            <p class="text-xs text-gray-500">${latest.time} ago</p>
+          </div>
+        </div>`;
+      activityList.insertAdjacentHTML('beforeend', item);
+    });
+  }
+}
+
+// Broadcast Send Feature
+document.getElementById('broadcast-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const title = document.getElementById('broadcast-title').value;
+  const message = document.getElementById('broadcast-message').value;
+  
+  if (!title || !message) return;
+  
+  const broadcasts = JSON.parse(localStorage.getItem("broadcasts")) || [];
+  broadcasts.push({ title, message, date: new Date().toLocaleString() });
+  localStorage.setItem("broadcasts", JSON.stringify(broadcasts));
+  
+  alert("Broadcast sent successfully to all users!");
+  this.reset();
+  updateAdminPanel();
+});
+
+function logout() {
+  if (confirm('Are you sure you want to logout?')) {
+    window.location.href = 'index.html';
+  }
+}
+</script>
+</body>
+</html>
+</html>

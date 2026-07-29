@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Donation Form | LACSO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #064e3b 0%, #059669 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #34d399;
+            box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2);
+            outline: none;
+        }
+
+        .label-style {
+            color: #d1fae5;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        select option {
+            background: #065f46;
+            color: white;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glass-card w-full max-w-lg rounded-3xl p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2 tracking-tight">Donate Food</h1>
+            <p class="text-emerald-100 text-sm opacity-80">Join us in making a difference.</p>
+        </div>
+
+        <form id="donationForm" class="space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="label-style">Food Item</label>
+                    <select id="foodName" required class="input-field w-full px-4 py-3 rounded-xl appearance-none">
+                        <option value="">Select Food</option>
+                        <option>Rice</option>
+                        <option>Bread</option>
+                        <option>Curry</option>
+                        <option>Vegetables</option>
+                        <option>Fruits</option>
+                        <option>Packaged Food</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="label-style">Quantity</label>
+                    <select id="quantity" required class="input-field w-full px-4 py-3 rounded-xl appearance-none">
+                        <option value="">Select Quantity</option>
+                        <option>1 Kg</option>
+                        <option>5 Kg</option>
+                        <option>10 Kg</option>
+                        <option>20 Packets</option>
+                        <option>50 Packets</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="label-style">Serves (Approx)</label>
+                    <select id="serves" required class="input-field w-full px-4 py-3 rounded-xl appearance-none">
+                        <option value="">Select</option>
+                        <option>10 People</option>
+                        <option>20 People</option>
+                        <option>50 People</option>
+                        <option>100 People+</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="label-style">Best Before</label>
+                    <select id="expiry" required class="input-field w-full px-4 py-3 rounded-xl appearance-none">
+                        <option value="">Select Expiry</option>
+                        <option>1 Day</option>
+                        <option>2 Days</option>
+                        <option>3 Days</option>
+                        <option>1 Week</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="label-style">Category</label>
+                    <select id="category" required class="input-field w-full px-4 py-3 rounded-xl appearance-none">
+                        <option value="">Select Category</option>
+                        <option>Veg</option>
+                        <option>Non-Veg</option>
+                        <option>Packaged</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="label-style">Pickup Time</label>
+                    <input type="time" id="pickupTime" required class="input-field w-full px-4 py-3 rounded-xl">
+                </div>
+            </div>
+
+            <div>
+                <label class="label-style">Pickup Address</label>
+                <input type="text" id="pickupAddress" placeholder="Enter full address for pickup" required
+                    class="input-field w-full px-4 py-3 rounded-xl placeholder-emerald-100 placeholder-opacity-30">
+            </div>
+
+            <div>
+                <label class="label-style">Drop Address (Optional)</label>
+                <input type="text" id="dropAddress" placeholder="e.g. Community Centre, Mother Teresa NGO"
+                    class="input-field w-full px-4 py-3 rounded-xl placeholder-emerald-100 placeholder-opacity-30">
+            </div>
+
+            <div>
+                <label class="label-style">Additional Notes</label>
+                <textarea id="notes" rows="2" placeholder="Any special instructions?"
+                    class="input-field w-full px-4 py-3 rounded-xl placeholder-emerald-100 placeholder-opacity-30 resize-none"></textarea>
+            </div>
+
+            <button type="submit"
+                class="w-full bg-emerald-400 hover:bg-emerald-300 text-emerald-950 font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg flex items-center justify-center gap-2">
+                Confirm Donation
+            </button>
+        </form>
+
+        <div class="text-center mt-6">
+            <a href="donor.html" class="text-emerald-200 text-sm hover:text-white transition-colors flex items-center justify-center gap-1">
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" 
+         class="hidden fixed bottom-6 right-6 glass-card bg-emerald-500 text-white px-6 py-3 rounded-2xl shadow-2xl transition-all duration-500">
+        ✅ Donation registered successfully!
+    </div>
+
+    <script>
+        const form = document.getElementById("donationForm");
+        const notification = document.getElementById("notification");
+
+        form.addEventListener("submit", async function(e) {
+            e.preventDefault(); 
+
+            const currentUser = JSON.parse(localStorage.getItem("currentUser")) || { id: 1, name: "Guest Donor" };
+            
+            const donationData = {
+                donor_id: currentUser.id,
+                donor_name: currentUser.name,
+                food_name: document.getElementById("foodName").value,
+                quantity: document.getElementById("quantity").value,
+                serves: document.getElementById("serves").value,
+                expiry: document.getElementById("expiry").value,
+                category: document.getElementById("category").value,
+                pickup_address: document.getElementById("pickupAddress").value,
+                drop_address: document.getElementById("dropAddress").value,
+                notes: document.getElementById("notes").value,
+                time: document.getElementById("pickupTime").value || new Date().toLocaleTimeString()
+            };
+
+            try {
+                const response = await fetch('api.php?action=submit_donation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(donationData)
+                });
+                
+                const result = await response.json();
+
+                if (result.status === "success") {
+                     notification.classList.remove("hidden");
+                     form.reset();
+                     setTimeout(() => {
+                         notification.classList.add("hidden");
+                         window.location.href = "donor.html";
+                     }, 2000);
+                } else {
+                     alert("Error: " + result.message);
+                }
+            } catch (error) {
+                console.error("Submission error:", error);
+                alert("Server Error. Check your connection.");
+            }
+        });
+    </script>
+</body>
+</html>

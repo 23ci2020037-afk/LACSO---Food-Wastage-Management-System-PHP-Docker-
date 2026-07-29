@@ -1,0 +1,17 @@
+# Local configuration & environment files
+.env
+*.log
+
+# OS generated files
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Uploaded images directory (keep directory, ignore temporary user uploads if desired)
+# uploads/*
+# !uploads/.gitkeep
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
