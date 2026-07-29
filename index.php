@@ -156,8 +156,7 @@ height: 300px;
 	<div class="absolute inset-0 bg-black bg-opacity-50 z-10"></div>
 	<div class="relative h-screen overflow-hidden" id="heroSlider">
 	<div class="absolute inset-0 transition-opacity duration-1000 opacity-0 slide active-slide">
-	<img src="https://readdy.ai/api/search-image?query=emotional%20portrait%20of%20hungry%20homeless%20children%20receiving%20food%20aid%2C%20soft%20natural%20lighting%2C%20hopeful%20expressions%2C%20cinematic%20composition%2C%20professional%20photography%2C%208k%20quality&width=1920&height=1080&seq=hero001&orientation=landscape"
-	alt="Helping Children" class="w-full h-full object-cover object-center">
+	<img src="images/child.jpeg" alt="Helping Children" class="w-full h-full object-cover object-center">
 	<div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
 	</div>
 	<div class="absolute inset-0 transition-opacity duration-1000 opacity-0 slide">
