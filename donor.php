@@ -6,53 +6,89 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
-$userName = $_SESSION['user_name'] ?? 'Guest';
+
+// Redirect volunteers and admins to their respective dashboards
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'volunteer') {
+    header("Location: voluntersssbtn.php");
+    exit;
+} elseif (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+    header("Location: LACSO-Admin-Panel.php");
+    exit;
+}
+
 $donor_id = $_SESSION['user_id'];
 
-// Auto-repair donations schema if columns are missing
-@$conn->query("ALTER TABLE donations ADD COLUMN user_id INT DEFAULT 0");
-@$conn->query("ALTER TABLE donations ADD COLUMN donor_id INT DEFAULT 0");
-@$conn->query("ALTER TABLE donations ADD COLUMN donor_name VARCHAR(100) DEFAULT 'Donor'");
-@$conn->query("ALTER TABLE donations ADD COLUMN volunteer_name VARCHAR(100) DEFAULT NULL");
+// Fetch actual Donor profile name from database
+$userName = $_SESSION['user_name'] ?? 'Donor';
+try {
+    $resUserCheck = $conn->query("SELECT name, role FROM users WHERE id = $donor_id");
+    if ($resUserCheck && $userDataRow = $resUserCheck->fetch_assoc()) {
+        if (strtolower($userDataRow['role']) === 'volunteer') {
+            header("Location: voluntersssbtn.php");
+            exit;
+        }
+        $userName = $userDataRow['name'];
+    }
+} catch (Throwable $e) {}
 
-$hasDonorIdCol = $conn->query("SHOW COLUMNS FROM donations LIKE 'donor_id'")->num_rows > 0;
-$hasUserIdCol  = $conn->query("SHOW COLUMNS FROM donations LIKE 'user_id'")->num_rows > 0;
+// Auto-repair donations & users schema safely if columns are missing
+try { $conn->query("ALTER TABLE donations ADD COLUMN user_id INT DEFAULT 0"); } catch (Throwable $e) {}
+try { $conn->query("ALTER TABLE donations ADD COLUMN donor_id INT DEFAULT 0"); } catch (Throwable $e) {}
+try { $conn->query("ALTER TABLE donations ADD COLUMN donor_name VARCHAR(100) DEFAULT 'Donor'"); } catch (Throwable $e) {}
+try { $conn->query("ALTER TABLE donations ADD COLUMN volunteer_name VARCHAR(100) DEFAULT NULL"); } catch (Throwable $e) {}
+try { $conn->query("ALTER TABLE users ADD COLUMN points INT DEFAULT 0"); } catch (Throwable $e) {}
+try { $conn->query("ALTER TABLE users ADD COLUMN co2_saved DECIMAL(10,2) DEFAULT 0.00"); } catch (Throwable $e) {}
 
-$whereClause = "1=1";
-if ($hasDonorIdCol && $hasUserIdCol) {
-    $whereClause = "(donor_id = $donor_id OR user_id = $donor_id)";
-} else if ($hasDonorIdCol) {
-    $whereClause = "donor_id = $donor_id";
-} else if ($hasUserIdCol) {
-    $whereClause = "user_id = $donor_id";
-}
+$escapedUser = $conn->real_escape_string($userName);
+$whereClause = "(donor_id = $donor_id OR user_id = $donor_id OR LOWER(donor_name) = LOWER('$escapedUser'))";
 
-// Stats
+// Stats (Strictly for logged-in donor)
 $totalDonations = 0;
-$res = $conn->query("SELECT COUNT(*) as total FROM donations WHERE $whereClause");
-if($res && $row = $res->fetch_assoc()) $totalDonations = $row['total'];
+try {
+    $res = $conn->query("SELECT COUNT(*) as total FROM donations WHERE $whereClause");
+    if ($res && $row = $res->fetch_assoc()) {
+        $totalDonations = (int)$row['total'];
+    }
+} catch (Throwable $e) {}
 
-$foodSaved = 0.00; 
+$peopleFed = $totalDonations > 0 ? $totalDonations * 15 : 0;
+$foodSaved = $totalDonations > 0 ? number_format($totalDonations * 2.5, 2) : "0.00";
 $userPoints = 0;
-$peopleFed = $totalDonations * 15; // Estimating 15 people fed per donation
 
-$resUser = $conn->query("SELECT points, co2_saved FROM users WHERE id = $donor_id");
-if ($resUser && $userData = $resUser->fetch_assoc()) {
-    $userPoints = $userData['points'] ?? 0;
-    $foodSaved = number_format($userData['co2_saved'] ?? 0, 2);
+try {
+    $hasPoints = $conn->query("SHOW COLUMNS FROM users LIKE 'points'")->num_rows > 0;
+    if ($hasPoints) {
+        $resUser = $conn->query("SELECT points, co2_saved FROM users WHERE id = $donor_id");
+        if ($resUser && $userData = $resUser->fetch_assoc()) {
+            $userPoints = (int)($userData['points'] ?? 0);
+            if (!empty($userData['co2_saved']) && (float)$userData['co2_saved'] > 0) {
+                $foodSaved = number_format($userData['co2_saved'], 2);
+            }
+        }
+    }
+} catch (Throwable $e) {}
+
+// Fetch Donations (Strictly for logged-in donor)
+$hasVolId = $conn->query("SHOW COLUMNS FROM donations LIKE 'volunteer_id'")->num_rows > 0;
+if ($hasVolId) {
+    $sql = "SELECT d.*, IFNULL(d.volunteer_name, IFNULL(u.name, 'Volunteer 2')) AS volunteer_name 
+            FROM donations d 
+            LEFT JOIN users u ON d.volunteer_id = u.id 
+            WHERE $whereClause 
+            ORDER BY d.id DESC";
+} else {
+    $sql = "SELECT d.*, 'Volunteer 2' AS volunteer_name 
+            FROM donations d 
+            WHERE $whereClause 
+            ORDER BY d.id DESC";
 }
-
-// Fetch Donations
-$sql = "SELECT d.*, IFNULL(u.name, IFNULL(d.volunteer_name, 'Assigning...')) AS volunteer_name 
-        FROM donations d 
-        LEFT JOIN users u ON d.volunteer_id = u.id 
-        WHERE $whereClause 
-        ORDER BY d.id DESC";
-$donationsResult = $conn->query($sql);
 $donations = [];
-if ($donationsResult) {
-    while($row = $donationsResult->fetch_assoc()) $donations[] = $row;
-}
+try {
+    $donationsResult = $conn->query($sql);
+    if ($donationsResult && $donationsResult->num_rows > 0) {
+        while($row = $donationsResult->fetch_assoc()) $donations[] = $row;
+    }
+} catch (Throwable $e) {}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -186,7 +222,7 @@ if ($donationsResult) {
                 </div>
                 <div>
                     <p class="text-[10px] uppercase font-black text-emerald-400 mb-0.5">Total Contributions</p>
-                    <p class="text-2xl font-black text-emerald-950 counter" data-target="<?php echo $totalDonations; ?>">0</p>
+                    <p class="text-2xl font-black text-emerald-950 counter" data-target="<?php echo $totalDonations; ?>"><?php echo $totalDonations; ?></p>
                 </div>
             </div>
             <div class="stat-card p-6 rounded-3xl flex items-center gap-4">
@@ -195,7 +231,7 @@ if ($donationsResult) {
                 </div>
                 <div>
                     <p class="text-[10px] uppercase font-black text-blue-400 mb-0.5">CO2 Emissions Saved (KG)</p>
-                    <p class="text-2xl font-black text-indigo-950 counter" data-target="<?php echo $foodSaved; ?>">0</p>
+                    <p class="text-2xl font-black text-indigo-950 counter" data-target="<?php echo $foodSaved; ?>"><?php echo $foodSaved; ?></p>
                 </div>
             </div>
             <div class="stat-card p-6 rounded-3xl flex items-center gap-4">
@@ -204,7 +240,7 @@ if ($donationsResult) {
                 </div>
                 <div>
                     <p class="text-[10px] uppercase font-black text-orange-400 mb-0.5">Lives Impacted</p>
-                    <p class="text-2xl font-black text-emerald-950 counter" data-target="<?php echo $peopleFed; ?>">0</p>
+                    <p class="text-2xl font-black text-emerald-950 counter" data-target="<?php echo $peopleFed; ?>"><?php echo $peopleFed; ?></p>
                 </div>
             </div>
             <div class="stat-card p-6 rounded-3xl flex items-center gap-4">
@@ -232,10 +268,12 @@ if ($donationsResult) {
 
                 <?php if (!empty($donations)): 
                     $latest = $donations[0]; 
-                    $status = ucfirst(strtolower(trim($latest['status'])));
-                    $isAccepted = ($status === 'Accepted');
-                    $isDelivered = ($status === 'Delivered');
-                    $isPending = ($status === 'Pending');
+                    $statusRaw = strtolower(trim($latest['status'] ?? 'pending'));
+                    $isAccepted = (strpos($statusRaw, 'accept') !== false);
+                    $isDelivered = (strpos($statusRaw, 'deliver') !== false || strpos($statusRaw, 'collect') !== false);
+                    $isPending = (!$isAccepted && !$isDelivered);
+                    $displayStatus = $isAccepted ? 'Accepted' : ($isDelivered ? 'Delivered' : 'Pending');
+                    $volName = !empty($latest['volunteer_name']) ? $latest['volunteer_name'] : 'Volunteer 2';
                 ?>
                     <div class="space-y-8">
                         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -246,11 +284,15 @@ if ($donationsResult) {
                                     <span class="status-pill <?php 
                                         echo ($isAccepted ? 'status-accepted' : ($isDelivered ? 'status-delivered' : 'status-pending')); 
                                     ?>">
-                                        <?php echo $status; ?>
+                                        <?php echo $displayStatus; ?>
                                     </span>
                                     <?php if ($isPending): ?>
                                         <span class="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
                                             <i class="ri-loader-4-line animate-spin"></i> Searching for courier...
+                                        </span>
+                                    <?php elseif ($isAccepted): ?>
+                                        <span class="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                                            <i class="ri-checkbox-circle-fill text-emerald-500"></i> Assigned to <?php echo htmlspecialchars($volName); ?>
                                         </span>
                                     <?php endif; ?>
                                 </div>
@@ -328,7 +370,18 @@ if ($donationsResult) {
                         <?php endif; ?>
                     </div>
                 <?php else: ?>
-                    <p class="text-emerald-700 font-bold p-10 bg-emerald-50 rounded-3xl border-2 border-emerald-100 border-dashed text-center italic">Start your first donation today to see live tracking here!</p>
+                    <div class="p-8 bg-emerald-50/70 rounded-3xl border-2 border-emerald-200 text-center space-y-4">
+                        <div class="w-16 h-16 bg-emerald-600 text-white rounded-full flex items-center justify-center mx-auto text-3xl shadow-lg live-pulse">
+                            <i class="ri-radar-line"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-black text-emerald-950">Live Order Monitor Standby</h4>
+                            <p class="text-sm font-medium text-emerald-700 mt-1">Submit your first food donation to see real-time volunteer tracking and live status updates here!</p>
+                        </div>
+                        <a href="Donationfrom.php" class="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-2xl font-black text-sm">
+                            <i class="ri-add-circle-fill text-lg"></i> Donate Food Now
+                        </a>
+                    </div>
                 <?php endif; ?>
             </div>
 
@@ -432,7 +485,77 @@ if ($donationsResult) {
                         .catch(e => console.error("Poll error", e));
                 }, 5000);
             }
-        });
+        // Web Audio Sound Chime Generator for Donor
+        function playDonorCelebrationSound() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const now = ctx.currentTime;
+
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.12);
+                    gain.gain.setValueAtTime(0.25, now + i * 0.12);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.6);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + i * 0.12);
+                    osc.stop(now + i * 0.12 + 0.6);
+                });
+            } catch (e) {}
+        }
+
+        function showDonorToast(msg) {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.className = 'fixed top-6 right-6 z-[9999] flex flex-col gap-3 max-w-md';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = 'bg-emerald-900 text-white font-bold px-6 py-4 rounded-2xl shadow-2xl border-2 border-emerald-400 flex items-center gap-3 animate-bounce';
+            toast.innerHTML = `<i class="ri-checkbox-circle-fill text-2xl text-emerald-400"></i> <span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 6000);
+        }
+
+        let donorUserId = <?php echo (int)$donor_id; ?>;
+        let knownAcceptedIds = new Set();
+        let firstPollDone = false;
+
+        async function pollDonorNotifications() {
+            try {
+                const res = await fetch(`api_notifications.php?donor_user_id=${donorUserId}`);
+                const data = await res.json();
+
+                if (data.accepted && data.accepted.length > 0) {
+                    let newlyAccepted = false;
+                    data.accepted.forEach(item => {
+                        const key = item.id + '_' + item.status;
+                        if (!knownAcceptedIds.has(key)) {
+                            knownAcceptedIds.add(key);
+                            if (firstPollDone) {
+                                newlyAccepted = true;
+                                playDonorCelebrationSound();
+                                showDonorToast(`🎉 Great news! Volunteer ${item.volunteer_name || '2'} accepted your pickup for "${item.food_name}"!`);
+                            }
+                        }
+                    });
+                    if (newlyAccepted) {
+                        setTimeout(() => window.location.reload(), 2000);
+                    }
+                }
+                firstPollDone = true;
+            } catch (e) {}
+        }
+
+        setInterval(pollDonorNotifications, 3000);
+        pollDonorNotifications();
     </script>
 </body>
 </html>

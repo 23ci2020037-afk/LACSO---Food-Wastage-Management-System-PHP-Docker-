@@ -54,8 +54,10 @@ $user_id = $_SESSION['user_id'];
             $co2Impact = ($servesNum > 0) ? ($servesNum * 1.2) : 2.5; 
             $pointsEarned = 10;
             
-            // Only update if columns exist (graceful fallback if user hasn't run the alter yet)
-            $conn->query("UPDATE users SET points = points + $pointsEarned, co2_saved = co2_saved + $co2Impact WHERE id = $user_id");
+            // Safely update points and co2_saved if available
+            try {
+                $conn->query("UPDATE users SET points = points + $pointsEarned, co2_saved = co2_saved + $co2Impact WHERE id = $user_id");
+            } catch (Throwable $e) {}
 
             header("Location: donor.php?success=1");
             exit;

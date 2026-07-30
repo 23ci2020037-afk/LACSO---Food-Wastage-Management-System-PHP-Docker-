@@ -671,40 +671,53 @@ if($allDonationsRes) {
         let lastDonationId = 0;
         
         function showNotification(title, message, isDonation = true) {
-            // Artificial 5 second delay as requested
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            
+            toast.className = 'toast ' + (isDonation ? '' : 'toast-red');
+            toast.innerHTML = `
+                <div class="toast-icon ${isDonation ? 'bg-emerald-100 text-emerald-600' : 'bg-orange-100 text-orange-600'}">
+                    <i class="${isDonation ? 'ri-box-3-fill' : 'ri-user-smile-fill'}"></i>
+                </div>
+                <div class="toast-content">
+                    <h4>${title}</h4>
+                    <p>${message}</p>
+                </div>
+            `;
+            container.appendChild(toast);
+            
             setTimeout(() => {
-                const container = document.getElementById('toast-container');
-                const toast = document.createElement('div');
-                
-                // Try playing sound, ignore if browser auto-play policy blocks it
-                const sound = document.getElementById('notify-sound');
-                if(sound) { sound.play().catch(e => { /* Ignore blocked play */ }); }
-                
-                toast.className = 'toast ' + (isDonation ? '' : 'toast-red');
-                toast.innerHTML = `
-                    <div class="toast-icon ${isDonation ? 'bg-emerald-100 text-emerald-600' : 'bg-orange-100 text-orange-600'}">
-                        <i class="${isDonation ? 'ri-box-3-fill' : 'ri-user-smile-fill'}"></i>
-                    </div>
-                    <div class="toast-content">
-                        <h4>${title}</h4>
-                        <p>${message}</p>
-                    </div>
-                `;
-                container.appendChild(toast);
-                
-                // Auto remove element after animation completes (5 seconds)
-                setTimeout(() => {
-                    if(toast.parentElement) toast.remove();
-                }, 5000);
+                if(toast.parentElement) toast.remove();
             }, 5000);
         }
+
+        function playAdminSound() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(659.25, now); // E5
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } catch (e) {}
+        }
+
+        let knownAdminAcceptIds = new Set();
 
         function pollNotifications() {
             fetch(`api_notifications.php?last_user_id=${lastUserId}&last_donation_id=${lastDonationId}`)
             .then(res => res.json())
             .then(data => {
-                // Initial Load - Set IDs without notifying
-                if (lastUserId === 0) {
+                if (lastUserId === 0 && lastDonationId === 0) {
                     lastUserId = data.new_last_user_id;
                     lastDonationId = data.new_last_donation_id;
                     return;
@@ -716,24 +729,41 @@ if($allDonationsRes) {
                 if(data.users && data.users.length > 0) {
                     data.users.forEach(u => {
                         let roleT = (u.role || 'user').toUpperCase();
-                        showNotification('[New User] ' + roleT, `${u.name} just registered!`, false);
+                        playAdminSound();
+                        showNotification('[New User] ' + roleT, `${u.name} registered!`, false);
                     });
                     lastUserId = data.new_last_user_id;
                     updated = true;
                 }
 
-                // Process Donations
+                // Process New Donations
                 if(data.donations && data.donations.length > 0) {
                     data.donations.forEach(d => {
-                        showNotification('New Donation Alert!', `${d.donor_name} donated ${d.food_name}!`, true);
+                        playAdminSound();
+                        showNotification('🎁 New Donation Posted!', `${d.donor_name || 'Donor'} donated ${d.food_name}!`, true);
                     });
                     lastDonationId = data.new_last_donation_id;
                     updated = true;
                 }
-                
-                // If we got new data, we might want to tell the user to refresh the dashboard or auto-refresh data
-                if(updated && document.activeElement.tagName !== "INPUT") {
-                    // Optional: You could reload specific components here
+
+                // Process Auto Assignments
+                if(data.auto_assigned && data.auto_assigned.length > 0) {
+                    data.auto_assigned.forEach(a => {
+                        playAdminSound();
+                        showNotification('⚡ Auto-Assign Dispatch!', `${a.food_name} assigned to ${a.volunteer_name}!`, true);
+                    });
+                    updated = true;
+                }
+
+                // Process Volunteer Acceptance Alerts
+                if(data.accepted && data.accepted.length > 0) {
+                    data.accepted.forEach(acc => {
+                        if (!knownAdminAcceptIds.has(acc.id)) {
+                            knownAdminAcceptIds.add(acc.id);
+                            playAdminSound();
+                            showNotification('🚴 Volunteer Pickup Accepted!', `${acc.volunteer_name || 'Volunteer'} accepted ${acc.food_name}`, false);
+                        }
+                    });
                 }
             })
             .catch(err => console.error("Poll error:", err));

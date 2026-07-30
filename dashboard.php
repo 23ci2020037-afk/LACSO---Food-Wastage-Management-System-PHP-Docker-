@@ -1,16 +1,10 @@
 <?php
-session_start();
+include 'db.php';
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 ?>
-<h2>Welcome, <?php echo $_SESSION['name']; ?> 🎉</h2>
-<p>You are logged in as: <?php echo $_SESSION['role']; ?></p>
+<h2>Welcome, <?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?> 🎉</h2>
+<p>You are logged in as: <?php echo htmlspecialchars($_SESSION['role'] ?? 'guest'); ?></p>
 <a href="logout.php">Logout</a>
-<?php
-session_start();
-session_destroy();
-header("Location: login.php");
-exit;
-?>

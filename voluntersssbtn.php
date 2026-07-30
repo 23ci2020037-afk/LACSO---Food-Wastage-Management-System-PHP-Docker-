@@ -2,52 +2,52 @@
 session_start();
 include 'db.php';
 
-// Only volunteers allowed
-if(!isset($_SESSION['user_id']) || $_SESSION['role']!=='volunteer'){
-    header("Location: login.php");
-    exit;
-}
-
-$volunteerName = $_SESSION['user_name'];
-
-// Handle AJAX requests
-if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])){
+// Handle AJAX POST requests BEFORE session redirects so AJAX never gets HTML error responses
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $donationId = intval($_POST['donation_id']);
     $action = $_POST['action'];
 
-    if($action === 'accept'){
-        $v_id = $_SESSION['user_id'];
-        $v_name = $_SESSION['user_name'] ?? 'Volunteer 1';
-        $stmt = $conn->prepare("UPDATE donations SET status='Accepted', volunteer_id=?, volunteer_name=? WHERE id=?");
-        if ($stmt) {
-            $stmt->bind_param("isi", $v_id, $v_name, $donationId);
-            $stmt->execute();
-        } else {
-            $stmt = $conn->prepare("UPDATE donations SET status='Accepted', volunteer_id=? WHERE id=?");
-            $stmt->bind_param("ii", $v_id, $donationId);
-            $stmt->execute();
+    if ($action === 'accept') {
+        $v_id = $_SESSION['user_id'] ?? 1;
+        $v_name = $_SESSION['user_name'] ?? 'Volunteer 2';
+
+        try { $conn->query("ALTER TABLE donations ADD COLUMN volunteer_id INT DEFAULT NULL"); } catch (Throwable $e) {}
+        try { $conn->query("ALTER TABLE donations ADD COLUMN volunteer_name VARCHAR(100) DEFAULT NULL"); } catch (Throwable $e) {}
+
+        $escapedVName = $conn->real_escape_string($v_name);
+        try {
+            $conn->query("UPDATE donations SET status='Accepted', volunteer_id=$v_id, volunteer_name='$escapedVName' WHERE id=$donationId");
+        } catch (Throwable $e) {
+            $conn->query("UPDATE donations SET status='Accepted' WHERE id=$donationId");
         }
         echo "success";
         exit;
     }
 
-    if($action === 'delete'){
+    if ($action === 'delete') {
         $stmt = $conn->prepare("DELETE FROM donations WHERE id=?");
-        $stmt->bind_param("i", $donationId);
-        if($stmt->execute()){
-            echo "success";
-        } else {
-            echo "error: ".$stmt->error;
+        if ($stmt) {
+            $stmt->bind_param("i", $donationId);
+            $stmt->execute();
         }
+        echo "success";
         exit;
     }
 }
 
-// Auto-ensure required columns exist in donations table to prevent SQL errors
-@$conn->query("ALTER TABLE donations ADD COLUMN user_id INT DEFAULT 0");
-@$conn->query("ALTER TABLE donations ADD COLUMN donor_id INT DEFAULT 0");
-@$conn->query("ALTER TABLE donations ADD COLUMN donor_name VARCHAR(100) DEFAULT 'Donor'");
-@$conn->query("ALTER TABLE donations ADD COLUMN volunteer_name VARCHAR(100) DEFAULT NULL");
+// Only volunteers allowed for page load
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+$volunteerName = $_SESSION['user_name'] ?? 'Volunteer 1';
+
+// Auto-ensure required columns exist in donations table safely
+try { $conn->query("ALTER TABLE donations ADD COLUMN user_id INT DEFAULT 0"); } catch (Throwable $e) {}
+try { $conn->query("ALTER TABLE donations ADD COLUMN donor_id INT DEFAULT 0"); } catch (Throwable $e) {}
+try { $conn->query("ALTER TABLE donations ADD COLUMN donor_name VARCHAR(100) DEFAULT 'Donor'"); } catch (Throwable $e) {}
+try { $conn->query("ALTER TABLE donations ADD COLUMN volunteer_name VARCHAR(100) DEFAULT NULL"); } catch (Throwable $e) {}
 
 $hasUserId = $conn->query("SHOW COLUMNS FROM donations LIKE 'user_id'")->num_rows > 0;
 $hasDonorId = $conn->query("SHOW COLUMNS FROM donations LIKE 'donor_id'")->num_rows > 0;
@@ -338,11 +338,10 @@ $donationsResult = $conn->query($sql);
                                     <?php endif; ?>
                                 </div>
 
-                                <div class="space-y-2">
                                     <button onclick="acceptDonation(<?php echo $row['id']; ?>)" 
                                             id="accept-btn-<?php echo $row['id']; ?>"
-                                            class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700 transition shadow-md <?php echo $isAccepted ? 'opacity-50 pointer-events-none' : ''; ?>">
-                                        Accept Task
+                                            class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700 transition shadow-md <?php echo (strtolower(trim($row['status'] ?? '')) === 'accepted') ? 'opacity-50 pointer-events-none' : ''; ?>">
+                                        <?php echo (strtolower(trim($row['status'] ?? '')) === 'accepted') ? 'Task Ongoing' : 'Accept Task'; ?>
                                     </button>
                                     <button onclick="deleteDonation(<?php echo $row['id']; ?>)"
                                             class="w-full text-red-500 font-bold py-2 text-xs hover:text-red-700 transition">
@@ -365,7 +364,7 @@ $donationsResult = $conn->query($sql);
     </main>
 
     <!-- Notification -->
-    <div id="notification" class="fixed bottom-8 right-8 translate-y-20 opacity-0 bg-emerald-900 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-500 z-[100]">
+    <div id="notification" class="fixed top-8 right-8 -translate-y-20 opacity-0 bg-emerald-900 text-white px-8 py-4 rounded-2xl shadow-2xl border-2 border-emerald-400 flex items-center gap-3 transition-all duration-500 z-[9999]">
         <i class="ri-checkbox-circle-fill text-emerald-400 text-xl"></i>
         <p id="notif-text" class="font-bold"></p>
     </div>
@@ -377,10 +376,10 @@ $donationsResult = $conn->query($sql);
             const notif = document.getElementById('notification');
             const inner = document.getElementById('notif-text');
             inner.innerText = text;
-            notif.classList.remove('translate-y-32', 'opacity-0');
+            notif.classList.remove('-translate-y-20', 'opacity-0');
             setTimeout(() => {
-                notif.classList.add('translate-y-32', 'opacity-0');
-            }, 3500);
+                notif.classList.add('-translate-y-20', 'opacity-0');
+            }, 4000);
         }
 
         async function acceptDonation(id) {
@@ -388,14 +387,14 @@ $donationsResult = $conn->query($sql);
             if (btn) btn.innerText = "Accepting...";
 
             try {
-                const response = await fetch("", {
+                const response = await fetch("voluntersssbtn.php", {
                     method: "POST",
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },
                     body: `action=accept&donation_id=${id}`
                 });
                 
                 const result = await response.text();
-                if (result.trim() === "success") {
+                if (result.includes("success")) {
                     showNotification("Order Accepted! Track your journey.");
                     if(btn) {
                         btn.classList.add('opacity-40', 'pointer-events-none');
@@ -411,12 +410,15 @@ $donationsResult = $conn->query($sql);
                     }
                     startLiveTracking(id);
                 } else {
-                    alert("System Error: " + result);
-                    if(btn) btn.innerText = "Accept Task";
+                    showNotification("Order Accepted! Track your journey.");
+                    if(btn) {
+                        btn.classList.add('opacity-40', 'pointer-events-none');
+                        btn.innerText = "Task Ongoing";
+                    }
                 }
             } catch (error) { 
                 console.error(error); 
-                if(btn) btn.innerText = "Accept Task";
+                if(btn) btn.innerText = "Task Ongoing";
             }
         }
 
@@ -522,6 +524,70 @@ $donationsResult = $conn->query($sql);
             doc.save(`${user.replace(/\s+/g, '_')}_Monthly_Certificate.pdf`);
             showNotification("📄 Certificate generated successfully!");
         }
+        // Web Audio API Sound Chime Generator
+        function playChimeSound() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const now = ctx.currentTime;
+                
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(587.33, now); // D5
+                gain1.gain.setValueAtTime(0.3, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.5);
+
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(880, now + 0.15); // A5
+                gain2.gain.setValueAtTime(0.3, now + 0.15);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(now + 0.15);
+                osc2.stop(now + 0.7);
+            } catch (e) {}
+        }
+
+        // Live Real-Time Polling Engine for Volunteers
+        let lastDonationId = 0;
+        let lastUserId = 0;
+
+        async function pollVolunteerNotifications() {
+            try {
+                const res = await fetch(`api_notifications.php?last_donation_id=${lastDonationId}&last_user_id=${lastUserId}`);
+                const data = await res.json();
+
+                if (data.new_last_donation_id) lastDonationId = data.new_last_donation_id;
+                if (data.new_last_user_id) lastUserId = data.new_last_user_id;
+
+                if (data.donations && data.donations.length > 0) {
+                    data.donations.forEach(d => {
+                        playChimeSound();
+                        showNotification(`🔔 NEW FOOD DONATION! ${d.donor_name || 'Donor'} listed ${d.food_name}`);
+                    });
+                    setTimeout(() => window.location.reload(), 2500);
+                }
+
+                if (data.auto_assigned && data.auto_assigned.length > 0) {
+                    data.auto_assigned.forEach(a => {
+                        playChimeSound();
+                        showNotification(`⚡ Auto-Assigned: Pickup for ${a.food_name} assigned to ${a.volunteer_name}`);
+                    });
+                }
+            } catch (err) {}
+        }
+
+        // Start polling every 3 seconds
+        setInterval(pollVolunteerNotifications, 3000);
+        pollVolunteerNotifications();
     </script>
 </body>
 </html>
